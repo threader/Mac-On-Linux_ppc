@@ -1,0 +1,20 @@
+#
+# Automatically generated make config: don't edit
+#
+CONFIG_PPC=y
+CONFIG_OLDWORLD=y
+CONFIG_FBDEV=y
+CONFIG_X11=y
+CONFIG_VNC=y
+CONFIG_XDGA=y
+CONFIG_ALSA=y
+CONFIG_OSS=y
+CONFIG_PCIPROXY=y
+# CONFIG_DEBUGGER is not set
+
+#
+# Network drivers
+#
+CONFIG_TUN=y
+CONFIG_TAP=n
+CONFIG_SHEEP=y

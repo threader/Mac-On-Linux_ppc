@@ -1,0 +1,22 @@
+
+The following people have contributed to this project (if I have 
+forgotten your name, please mail me!):
+
+	Samuel Rydh,
+	Benjamin Herrenschmidt,
+	Harry Eaton,
+	Ben Martz,
+	Brad Midgley,
+	Ryan Nielsen,
+	David Rydh,
+	Takashi Oe,
+	Charles McLachlan,
+	Fredrik Andersson,
+	Ariel Yaar,
+	Paul Mackerras
+	
+And a special thanks to Christian Bauer for the Basillisk II
+emulator from which the sheep_net kernel module and the 
+X-driver originate.
+	
+/Samuel <samuel@ibrium.se>

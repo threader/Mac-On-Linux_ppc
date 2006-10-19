@@ -1,0 +1,45 @@
+MOL Changelog
+
+mol-0.9.71 - 2006-10-02 Joseph Jezak <josejx@gentoo.org>
+	* Fixed ablk bug introduced by gcc4 fixes
+mol-0.9.71_pre9 - 2006-09-05 Joseph Jezak <josejx@gentoo.org>
+	* Lots of GCC 4.x warning fixes
+	* Compile fixes for kernels 2.6.17 and newer
+mol-0.9.71_pre8 - 2006-01-26 Joseph Jezak <josejx@gentoo.org>
+	* Fixed mol kmod naming issue, same as last version's netdev fix
+	* Added video resolution settings for new PBs and Apple Cinema Displays 
+mol-0.9.71_pre7 - 2006-01-10 Joseph Jezak <josejx@gentoo.org>
+	* Reverted the "openbios" back to the "of" binary, fixes booting OS9
+	* Fixed netdev install directory with 2.6 kernels
+	* Fixed version variable
+mol-0.9.71_pre6 - 2005-12-01 Joseph Jezak <josejx@gentoo.org>
+	* Removed the 2.6.15 fix, it's fixed upstream now
+	* Included typo fix in src/netdriver/Makefile.26 from Mattias Nissler
+mol-0.9.71_pre5 - 2005-11-27 Joseph Jezak <josejx@gentoo.org>
+	* Updated mods.mkext with OSX 10.2 compatible version
+	* Fixed building with 2.6.15
+	* Included some more debian patches
+	* Included build fixes for 2.4 from Hans-Martin Mosner
+mol-0.9.71_pre4 - 2005-10-12 Joseph Jezak <josejx@gentoo.org> 
+	* Big filesystem fix is applied in build system instead of the ebuild
+	* Tiger nvram fix is applied in the build system instead of the ebuild 
+	* Fix for improper binutils handling of some ASM (thanks Bin Zhang)
+	* Fixed versions and a few minor typos
+mol-0.9.71_pre3 - 2005-10-12 Joseph Jezak <josejx@gentoo.org> 
+	* Tiger Acceleration fix by adding NW compatible NVRAM image
+	* GCC4 compile fixes
+mol-0.9.71_pre2 - 2005-10-12 Joseph Jezak <josejx@gentoo.org> 
+	* Based on MOL BK development pull
+	* Build fix for 2.6.9
+	* Build fix for 2.6.10 
+	* Build fix for 2.6.12
+	* Scheduler Fixes (fixes lag in newer kernels)
+	* .tmp_offset patch fixes sandbox issues on Gentoo
+	* Tiger support (Mattias Nissler's patch)
+	* PCI Proxy support
+	* MOL module loading name fix
+	* Tiger 8GB Disk install patch
+	* 96MB BootX fix
+	* XSHM fix
+	* Sheep building typo fixed
+	* Probably other minor things
