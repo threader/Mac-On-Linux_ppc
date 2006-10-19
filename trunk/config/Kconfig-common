@@ -1,0 +1,120 @@
+mainmenu "Mac-on-Linux Configuration"
+
+config PPC
+	bool
+	default y
+	help
+	  Building for PPC hardware.
+
+#menu "Special Build Targets"
+#config MPC107
+#	bool "MPC107 board (Crescendo)"
+#	default n
+#	help
+#	  Build MOL for the Crescendo accelerator.
+#endmenu
+
+config OLDWORLD
+	bool "Oldworld Support (for Mac OS 8.5 and earlier)"
+	default y
+	help
+	  No help yet.
+
+config FBDEV
+	bool "FBDEV Video Support"
+	default y
+	help
+	  No help yet.
+
+config X11
+	bool "X11 Support"
+	default y
+	help
+	  No help yet.
+
+config VNC
+	bool "VNC Server Support"
+	default y
+	help
+	  This option makes it possible to run MOL as a VNC server (serving the
+	  video output to a remote host). This driver is somewhat buggy...
+
+config XDGA
+	depends X11
+	bool "X11 DGA support (obsolete)"
+	default y
+	help
+	  No help yet.
+
+config ALSA
+	bool "ALSA sound support"
+	default y
+	help
+	  Support for ALSA sound devices.
+
+config OSS
+	bool "OSS sound support"
+	default y
+	help
+	  Support for OSS sound devices (/dev/dsp).
+
+config USBDEV
+	bool "Generic USB support (USBDEV)"
+	default y
+	help
+	  Support for generic USB devices.
+
+config PCIPROXY
+	bool "pci proxying support"
+	default n
+	help
+	  Enable this option if you want to access pci devices in the host system from the guest
+	  OS. This should work for most pci device, however, there are some restrictions
+	  concerning bus mastering etc. You will also have to add configuration options that
+	  provide device tree information for the devices you want to make available.
+
+menu "Debugging"
+config DEBUGGER
+	bool "Debugger support"
+	default n
+	help
+	  Enables the Mac-on-Linux debugger.
+
+config TTYDRIVER
+	bool "Experimental TTY driver"
+	default n
+	help
+	  This experimental TTY driver is currently only used for
+	  communication with OpenFirmware through a /dev/pty interface.
+
+config SCSIDEBUG
+	bool "Log SCSI commands"
+	default n
+	help
+	  This option turns on SCSI command logging. WARNING: lots of output.
+
+config DUMP_PACKETS
+	bool "Dump network packets"
+	default n
+	help
+	  This option turns on logging of al network packets. WARNING: lots of output.
+
+config DHCP_DEBUG
+	bool "Dump DHCP negotiation information"
+	default n
+	help
+	  This option turns on DHCP debugging.
+
+config HOSTED
+	bool "Build a hosted MOL version (WARNING: don't enable this!)"
+	default n
+	help
+	  This option makes it simpler to debug MOL within MOL. IMPORTANT: A MOL binary
+	  compiled with this option enabled can _only_ be run within MOL. A kernel panic
+	  will occur if the mol kernel module is loaded in non-mol context.
+
+
+endmenu
+
+source "src/netdriver/Kconfig"
+

@@ -1,0 +1,171 @@
+#!/bin/bash
+####################################################################
+# Targets for downloading binary files (the BitKeeper tree does
+# not contain MacOS binaries etc.)
+####################################################################
+
+RSYNC_MODULE=rsync.penguinppc.org::libmol
+#ALT_RSYNC_MODULE=zorn.theophys.kth.se::libmol
+ALT_RSYNC_MODULE=master.penguinppc.org::libmol
+
+RSYNC_MODULE_R=master.penguinppc.org::libmol
+RSYNC_MODULE_RW=samuel@master.penguinppc.org::libmol-rw
+
+EXTRA_BIN_FILES="drivers/*.nw drivers/*.ow drivers/*.x drivers/bootx \
+		drivers/openbios drivers/of drivers/*.mkext graphics/*.raw graphics/*.png \
+		nvram/nvram.dist startboing images/*.dmg VERSION"
+
+
+###################################
+# copybinfiles srcdir destdir
+###################################
+
+function copybinfiles()
+{
+    echo "=========================================================="
+    echo " Copying binary files from $1 to $2"
+    echo "=========================================================="
+
+    set -f
+    for x in $EXTRA_BIN_FILES ; do
+	V1=`find $1 -path $1/$x`
+	for X in $V1 ; do
+	    Y=`echo $X | sed -e s/$1/$2/`
+	    echo " $X -> $Y"
+	    ln -f $X $Y || exit 1
+	done
+    done
+    set +f
+}
+
+function do_populate() 
+{
+    [ ! -f libimport/drivers/video.nw ] && {
+	echo "====== This tree does not contain any binary files! ===="
+	exit 1
+    }
+
+    for x in graphics drivers images nvram ; do
+	test -d mollib/$x || mkdir mollib/$x
+    done
+
+    copybinfiles libimport mollib
+    echo "======================== DONE ============================"
+}
+
+function do_import() 
+{
+    echo "=========================================================="
+    echo " Downloading binaries from $RSYNC_MODULE"
+    echo "=========================================================="
+
+    rsync -avz --delete $RSYNC_MODULE/ libimport/ || {
+	echo "An error occurred, retrying..."
+	rsync -avz --delete $RSYNC_MODULE/ libimport/ || {
+	    echo "An error ocurred, trying secondary rsync server ($ALT_RSYNC_MODULE)."
+	    rsync -avz --delete $ALT_RSYNC_MODULE/ libimport/ || exit 1;
+	}
+    }
+
+    [ ! -f libimport/drivers/video.nw ] && {
+	echo "====== This tree does not contain any binary files! ===="
+	exit 1
+    }
+}
+
+
+function do_export()
+{
+    [ ! -f mollib/drivers/video.nw ] && {
+	echo "===== This tree does not contain any binary files! ===="
+	exit 1;
+    }
+    rm -rf libimport.BAK libimport
+    rsync -avz --delete $RSYNC_MODULE_R/ libimport.BAK/ || exit 1;
+
+    mkdir libimport libimport/drivers libimport/nvram libimport/images libimport/graphics
+    copybinfiles mollib libimport
+
+    echo
+    echo "======================= CHANGES =========================="
+    set -f
+    ORG=`find libimport.BAK -type f`
+    for x in $ORG ; do
+	y=`echo $x | sed -e s/libimport.BAK/libimport/`
+	[ ! -f $y ] && {
+	    echo
+	    echo "    WARNING: File '$x' will be removed"
+	    echo "    `ls -l $x`"
+	    echo
+	}
+	[ -f $y ] && {
+	    cmp $x $y >& /dev/null && {
+		echo "    Unmodified: `echo $y | sed -e s/libimport//`"
+	    } || {
+		echo
+		echo "    MODIFIED FILE: '$x'"
+		echo "    Old: `ls -l $x`"
+		q=`echo $x | sed -e s/.BAK//`
+		echo "    New: `ls -l $q`"
+	    }
+	}
+    done
+    NEW=`find libimport -type f`
+    for x in $NEW ; do
+	y=`echo $x | sed -e s/libimport/libimport.BAK/`
+	[ ! -f $y ] && {
+	    echo
+	    echo "    NEW file: '$x'"
+	    echo "    `ls -l $x`"
+	}
+    done
+
+    set +f
+    echo
+    echo "=========================================================="
+    echo "Next step is upload to $RSYNC_MODULE_RW" 
+    read -n 1 -p "Proceed [y/N]? " flag
+    echo
+    [ "$flag" == "y" -o "$flag" == "Y" ] && {
+	rsync -avz --delete --delete-excluded libimport/ $RSYNC_MODULE_RW
+    } || {
+	echo --- Aborted ---
+    }
+}
+
+function do_delete()
+{
+    set -f
+    echo "=========================================================="
+    echo " Deleting binaries files"
+    echo "=========================================================="
+
+    for X in $EXTRA_BIN_FILES ; do
+	find mollib -path mollib/$X -print -exec rm -f {} ';'
+    done
+    echo "==================== DONE ================================"
+    exit 0
+}
+
+
+###################################
+# Main
+###################################
+
+[ $# == 0 ] && {
+    echo "Usage: libimport import|export|delete"
+    exit 1
+}
+
+case $1 in
+    delete)	do_delete ;;
+    export)	do_export ;;
+    import)	do_import ; do_populate ;;
+    populate)	do_populate ;;
+    import_dist)
+		RSYNC_MODULE=$RSYNC_MODULE_R
+		do_import ;;
+    *)		echo "bad command $1" ; exit 1 ;;
+esac
+
+exit 0

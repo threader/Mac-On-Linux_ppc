@@ -1,0 +1,22 @@
+
+menu "Network drivers"
+
+config TUN
+	bool "Tun driver"
+	default y
+	help
+	  Build the tun/tap kernel module (recommended)
+
+config TAP
+	bool "Ethertap driver"
+	default y
+	help
+	  Build the ethertap kernel module (obsolete)
+
+config SHEEP
+	bool "Sheep net driver"
+	default y
+	help
+	  Build the sheep-net kernel module
+
+endmenu
