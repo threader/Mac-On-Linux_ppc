@@ -55,7 +55,7 @@ VENDOR		:=
 #################################################################
 
 VERSION		:= 0.9.71
-EXTRA_VERSION	:= $(VENDOR)
+EXTRA_VERSION	:= .1$(VENDOR)
 RELEASENAME	:= $(VERSION)$(EXTRA_VERSION)$(VENDOR)
 
 _prefix		= $(DESTDIR)$(prefix)
