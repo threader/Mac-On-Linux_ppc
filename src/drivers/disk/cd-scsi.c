@@ -80,7 +80,7 @@ do_execute( scsi_ureq_t *u, idev_t *idev )
 	cgc.sense = (struct request_sense*)&u->sb;
 	cgc.data_direction = u->is_write ? CGC_DATA_WRITE :
 		u->size ? CGC_DATA_READ : CGC_DATA_NONE;
-	cgc.buffer = (char *) buffer;
+	cgc.buffer = (unsigned char *) buffer;
 	cgc.buflen = u->size;
 	cgc.quiet = 1;
 	cgc.timeout = 30000;
