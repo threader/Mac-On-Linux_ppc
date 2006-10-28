@@ -1,35 +1,42 @@
-.\" Hey Emacs! This file is -*- nroff -*- source.
-.\"
-.de It
-.TP 4.6cm
-.B " \\$1 "
-..
-.de It2
-.TP 3cm
-.B " \\$1 "
-..
-.TH MOLVCONFIG 8 "12 August 2001" "Mac-on-Linux" "System Reference Manual"
-.SH NAME
-.B molvconfig
-\- configure full\-screen video modes for Mac\-on\-Linux
-.SH SYNOPSIS
-.B molvconfig
-.SH DESCRIPTION
-The \fImolvconfig\fR program configures is used to
-configure full\-screen video modes for Mac\-on\-Linux.
-
-.fi
-.SH FILES
-.nf
-\fI/etc/molrc\fR    \- Mac\-on\-Linux configuration file
-.fi
-.SH BUGS
-This man page is not complete...
-.SH AUTHORS
-This man page was written by Samuel Rydh <samuel@ibrium.se>.
-.P
-.SH REPORTING BUGS
-Bugs in \fBmolvconfig\fR should be reported to Samuel Rydh <samuel@ibrium.se>.
-.SH SEE ALSO
-.BR startmol (1),
-.BR molrc (5)
+.TH "molvconfig" "1" 
+.SH "NAME" 
+molvconfig \(em Console video configuration for Mac-on-Linux 
+.SH "SYNOPSIS" 
+.PP 
+\fBmolvconfig\fR 
+.SH "Description" 
+.PP 
+\fBmolvconfig\fR find a free virtual terminal and 
+uses it to interactively probe the video modes specified in the 
+file \fB/etc/fb.modes\fP, and in the files found 
+in the directory \fB/usr/share/mol/vmodes/\fP.  The 
+video modes that are found to work on a particular system are 
+written to the video mode database 
+\fB/var/lib/mol/fb_modes\fP, where they can be used 
+by the console video driver of \fBMac-on-Linux\fP. 
+ 
+.SH "Files" 
+.PP 
+\fB/usr/share/mol/vmodes/\fP contains a set of 
+files with typical video modes for various Macs. 
+ 
+.PP 
+\fB/etc/fb.modes\fP is usually created with 
+\fBfbset\fR and contains the current framebuffer 
+settings. 
+ 
+.PP 
+\fB/var/lib/mol/fb_modes\fP contains the video mode 
+database generated for a particular system. 
+ 
+.SH "See also" 
+.PP 
+mol(7), molrc(5), moldeb(1), molrcget(1), startmol(1), 
+strip_nwrom(1). 
+ 
+.SH "Author" 
+.PP 
+This manual page was written by Jens Schmalzing 
+<jensen@debian.org> for \fBDebian GNU/Linux\fP. 
+ 
+.\" created by instant / docbook-to-man, Fri 06 Oct 2006, 20:37 
