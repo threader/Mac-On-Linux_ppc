@@ -1,5 +1,7 @@
 MOL Changelog
-
+mol-0.9.71.1 - 2006-10-28 Joseph Jezak <josejx@gentoo.org>
+	* Added new molvconfig manpage from debian
+	* Compile fixes for 2.6.19
 mol-0.9.71 - 2006-10-02 Joseph Jezak <josejx@gentoo.org>
 	* Fixed ablk bug introduced by gcc4 fixes
 mol-0.9.71_pre9 - 2006-09-05 Joseph Jezak <josejx@gentoo.org>
