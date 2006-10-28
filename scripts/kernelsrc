@@ -17,19 +17,10 @@ function headercheck()
 	exit 1
     fi
 
-    if ! test -f $KERNEL_SOURCE/include/linux/config.h ; then
+    if ! test -f $KERNEL_SOURCE/include/linux/config.h && ! test -f $KERNEL_SOURCE/include/linux/autoconf.h ; then
 	echo 
 	echo " --- Error: Unconfigured kernel source!"
-	echo " --- (missing file: $KERNEL_SOURCE/include/linux/config.h)"
 	echo 
-	exit 1
-    fi
-
-    if ! test -f $KERNEL_SOURCE/include/linux/autoconf.h ; then
-	echo
-	echo " --- Error: Unconfigured kernel headers!"
-	echo " --- (missing file: $KERNEL_SOURCE/include/linux/autoconf.h)"
-	echo
 	exit 1
     fi
 
