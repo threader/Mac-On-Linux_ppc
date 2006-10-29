@@ -22,7 +22,7 @@
 
 struct ablk_device;
 
-typedef int		iofunc_t( int unit, const struct iovec *vec, int count );
+typedef int		iofunc_t( bdev_desc_t *bdev, const struct iovec *vec, int count );
 typedef iofunc_t	*cntrlfunc_t( struct ablk_device *d, int cmd, int param );
 
 typedef struct ablk_device {

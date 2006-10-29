@@ -48,33 +48,48 @@ static off_t read_uint32(int fd)
 }
 
 /* Open dmg image */
-int dmg_open(bdev_desc_t *bdev)
+int dmg_open(int fd, bdev_desc_t *bdev)
 {
-    BDRVDMGState *s = bdev->dmg_state;
-    off_t info_begin,info_end,last_in_offset,last_out_offset;
     u32 count;
     u32 max_compressed_size=1,max_sectors_per_chunk=1,i;
-    
-    s->fd = bdev->fd;
+    bdev->priv = malloc(sizeof(BDRVDMGState));
+    if(bdev->priv == NULL)
+        goto fail;
+    BDRVDMGState *s = DMG_PRIV(bdev);
+    CLEAR(*s);
+
+    off_t info_begin,info_end,last_in_offset,last_out_offset;
+    printm("Opening DMG disk ");
+
+    /* Init the bdev struct */
+    bdev->fd = fd;
+    bdev->read = &wrap_read;
+    bdev->real_read = &dmg_read;
+    bdev->write = NULL;
+    bdev->seek = &dmg_seek;
+    bdev->close = &dmg_close;
+
+    s->fd = fd;
+    /* RO */
     bdev->flags &= ~BF_ENABLE_WRITE;
     s->n_chunks = 0;
     s->offsets = s->lengths = s->sectors = s->sectorcounts = 0;
-    
+
     /* read offset of info blocks */
     if(lseek(s->fd,-0x1d8,SEEK_END)<0)
-	goto close_fd;
+	goto fail;
     info_begin=read_off(s->fd);
     if(info_begin==0)
-	goto close_fd;
+	goto fail;
     if(lseek(s->fd,info_begin,SEEK_SET)<0)
-	goto close_fd;
+	goto fail;
     if(read_uint32(s->fd)!=0x100)
-	goto close_fd;
+	goto fail;
     if((count = read_uint32(s->fd))==0)
-	goto close_fd;
+	goto fail;
     info_end = info_begin+count;
     if(lseek(s->fd,0xf8,SEEK_CUR)<0)
-	goto close_fd;
+	goto fail;
 
     /* read offsets */
     last_in_offset = last_out_offset = 0;
@@ -83,14 +98,14 @@ int dmg_open(bdev_desc_t *bdev)
 
 	count = read_uint32(s->fd);
 	if(count==0)
-		goto close_fd;
+		goto fail;
 	type = read_uint32(s->fd);
 	if(type!=0x6d697368 || count<244)
 	    lseek(s->fd,count-4,SEEK_CUR);
 	else {
 	    int new_size, chunk_count;
 	    if(lseek(s->fd,200,SEEK_CUR)<0)
-		goto close_fd;
+		goto fail;
 	    chunk_count = (count-204)/40;
 	    new_size = sizeof(u64) * (s->n_chunks + chunk_count);
 	    s->types = realloc(s->types, new_size/2);
@@ -109,7 +124,7 @@ int dmg_open(bdev_desc_t *bdev)
 		    chunk_count--;
 		    i--;
 		    if(lseek(s->fd,36,SEEK_CUR)<0)
-			goto close_fd;
+			goto fail;
 		    continue;
 		}
 		read_uint32(s->fd);
@@ -129,18 +144,19 @@ int dmg_open(bdev_desc_t *bdev)
 
     /* initialize zlib engine */
     if(!(s->compressed_chunk=(char*)malloc(max_compressed_size+1)))
-	goto close_fd;
+	goto fail;
     if(!(s->uncompressed_chunk=(char*)malloc(512*max_sectors_per_chunk)))
-	goto close_fd;
+	goto fail;
     if(inflateInit(&s->zstream) != Z_OK)
-	goto close_fd;
+	goto fail;
 
     s->current_chunk = s->n_chunks;
     
+    printm("ok!\n");
     return 0;
 
-close_fd:
-    close(s->fd);
+fail:
+    printm("failed!\n");
     return -1;
     
 }
@@ -227,30 +243,30 @@ static inline int dmg_read_chunk(BDRVDMGState *s, int sector_num)
     return 0;
 }
 
-int dmg_read(ablk_device_t *ad, u64 sector_num, 
-                    u8 *buf, int nb_bytes)
+int dmg_read(bdev_desc_t *bdev, u8 *buf, int nb_bytes)
 {
-    BDRVDMGState *s = ad->bdev->dmg_state;
+    BDRVDMGState *s = DMG_PRIV(bdev);
     int i;
     int nb_sectors = ceil(nb_bytes / 512);
 
     for(i=0;i<nb_sectors;i++) {
 	u32 sector_offset_in_chunk;
-	if(dmg_read_chunk(s, sector_num+i) != 0)
+	if(dmg_read_chunk(s, s->seek_sector+i) != 0)
 	    return -1;
-	sector_offset_in_chunk = sector_num+i-s->sectors[s->current_chunk];
+	sector_offset_in_chunk = s->seek_sector+i-s->sectors[s->current_chunk];
 	memcpy(buf+i*512, s->uncompressed_chunk+sector_offset_in_chunk*512, 512);
     }
-    return nb_sectors;
+    return nb_bytes;
 }
 
-void dmg_set_seek(ablk_device_t *ad, long seek_block){
-    ad->bdev->dmg_state->seek_block = seek_block;
+int dmg_seek(bdev_desc_t *bdev, long seek_block, long offset){
+    DMG_PRIV(bdev)->seek_sector = (seek_block + offset)/512ULL;
+    return 0;
 }
 
 void dmg_close(bdev_desc_t *bdev)
 {
-    BDRVDMGState *s = bdev->dmg_state;
+    BDRVDMGState *s = DMG_PRIV(bdev);
     if(s->n_chunks>0) {
 	free(s->types);
 	free(s->offsets);
@@ -261,4 +277,5 @@ void dmg_close(bdev_desc_t *bdev)
     free(s->compressed_chunk);
     free(s->uncompressed_chunk);
     inflateEnd(&s->zstream);
+    free(s);
 }

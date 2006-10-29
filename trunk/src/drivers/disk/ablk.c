@@ -57,7 +57,7 @@ typedef struct {
 
 	/* fields private to the i/o thread */
 	int		n_requests;		/* #descriptors processed (used for completion) */
-	int		cur_fd;
+	int		cur_dev;		/* Current device */
 	iofunc_t 	*iofunc;
 } ablk_t;
 
@@ -79,20 +79,21 @@ ablk_post_event( ablk_device_t *d, int event )
 #define MAX_IOVEC	32
 
 static int
-dummy_io( int fd, const struct iovec *vec, int n )
+dummy_io( bdev_desc_t *bdev, const struct iovec *vec, int n )
 {
 	int i, s;
 	
 	for( s=0, i=0; i<n; i++ )
 		s += vec[i].iov_len;
 
-	//printm("dummy_io: [%d] %d bytes\n", fd, s );
+	//printm("dummy_io: [%d] %d bytes\n", bdev->fd, s );
 	return s;
 }
 
 static iofunc_t *
-control_request( int unit, int cmd, int param ) 
+control_request( bdev_desc_t *bdev, int cmd, int param ) 
 {
+	int unit = bdev->fd;
 	iofunc_t *ret = NULL;
 	cntrlfunc_t *func = ablk.devs[unit].cntrl_func;
 
@@ -132,7 +133,7 @@ do_work( void )
 		if( n && (!proceed || n == MAX_IOVEC || !(r->flags & ABLK_SG_BUF)) ) {
 			int ret;
 
-			while( (ret=(*ablk.iofunc)(ablk.cur_fd, vec, n)) != count ) {
+			while( (ret=(*ablk.iofunc)(ablk.devs[ablk.cur_dev].bdev, vec, n)) != count ) {
 				int s, i;
 				for( i=0; ret > 0; i++, ret -= s, count -= s ) {
 					s = MIN( vec[i].iov_len, ret );
@@ -168,7 +169,7 @@ do_work( void )
 		if( (f & ABLK_SG_BUF) ) {
 			ablk_sg_t *p = (ablk_sg_t*)r;
 			iovec_pun.v = &(vec[n].iov_base);
-			if( mphys_to_lvptr( p->buf, (char **)iovec_pun.c ) ) {
+			if( mphys_to_lvptr( p->buf, (char**)iovec_pun.c ) ) {
 				printm("ablk: bogus sg-buf");
 				goto error;
 			}
@@ -184,17 +185,18 @@ do_work( void )
 			printm("ablk: bad unit");
 			goto error;
 		}
-		ablk.cur_fd = ablk.devs[r->unit].bdev->fd;
+		ablk.cur_dev = r->unit;
+		/* Read / Write Request */
 		if( f & (ABLK_READ_REQ | ABLK_WRITE_REQ) ) {
-			ablk.iofunc = (f & ABLK_WRITE_REQ)? writev : readv;
-
+			/* Schedule the next iofunc */
+			ablk.iofunc = (f & ABLK_WRITE_REQ)? ablk.devs[r->unit].bdev->write : ablk.devs[r->unit].bdev->read;
 			/* r->param contains first sector */
-			if( blk_lseek( ablk.cur_fd, r->param, 0 ) < 0 ) {
+			if( ablk.devs[r->unit].bdev->seek( ablk.devs[r->unit].bdev, r->param, 0 ) < 0 ) {
 				printm("ablk: bad lseek");
 				goto error;
 			}
 		} else if( f & ABLK_CNTRL_REQ_MASK) {
-			ablk.iofunc = control_request( r->unit, (f & ABLK_CNTRL_REQ_MASK), r->param );
+			ablk.iofunc = control_request( ablk.devs[r->unit].bdev, (f & ABLK_CNTRL_REQ_MASK), r->param );
 			if( f & ABLK_RAISE_IRQ )
 				irq_line_hi( ablk.irq );
 		} else {
@@ -317,7 +319,7 @@ osip_ablk_cntrl( int sel, int *params )
 		if( ablk.running )
 			break;
 
-		ablk.cur_fd = -1;
+		ablk.cur_dev = -1;
 		ablk.iofunc = dummy_io;
 		if( ablk.ring ) {
 			/* el. 1 is the first element to be processed */
@@ -410,17 +412,21 @@ osip_ablk_sync_io( int sel, int *params )
 	ablk_device_t *d = &ablk.devs[ind];
 	bdev_desc_t *bdev;
 	char *buf;
-	
+	struct iovec vec;
+
 	if( channel || ind >= ablk.ndevs || mphys_to_lvptr( mphys, &buf ) )
 		return -1;
 
 	bdev = d->bdev;
 
-	if( bdev->fd < 0 || blk_lseek(bdev->fd, blk, 0) < 0 )
+	if( bdev->fd < 0 || bdev->seek(bdev, blk, 0) < 0 )
 		return -1;
+
+	vec.iov_len = size;
+	vec.iov_base = buf;
 		
 	cnt = (sel == OSI_ABLK_SYNC_WRITE) ?
-		write( bdev->fd, buf, size ) : read( bdev->fd, buf, size );
+		bdev->write(bdev, &vec, 1) : bdev->read(bdev, &vec, 1);
 
 	return (cnt == size)? 0 : -1;
 }

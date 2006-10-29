@@ -166,6 +166,7 @@ disk_open( char *name, int flags, int *ro_fallback, int silent )
 
 		/* make sure the size of this device is nonzero */
 		if( lseek(fd, 0, SEEK_SET) || read(fd, buf, sizeof(buf)) != sizeof(buf) ) {
+			LOG_ERR("Device %s is zero length, refusing to use it.", name );
 			close( fd );
 			return -1;
 		}

@@ -32,8 +32,12 @@
 #endif
 #endif
 
-#define	le32_to_cpu( x )	cpu_to_le32((x))
-#define	le16_to_cpu( x )	cpu_to_le16((x))
+#define be64_to_cpu( x ) cpu_to_be64( x )
+#define le64_to_cpu( x ) cpu_to_le64( x )
+#define be32_to_cpu( x ) cpu_to_be32( x )
+#define le32_to_cpu( x ) cpu_to_le32( x )
+#define be16_to_cpu( x ) cpu_to_be16( x )
+#define le16_to_cpu( x ) cpu_to_le16( x )
 
 #if BYTE_ORDER == BIG_ENDIAN
 

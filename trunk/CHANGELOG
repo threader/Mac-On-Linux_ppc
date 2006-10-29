@@ -1,4 +1,8 @@
 MOL Changelog
+mol-0.9.72_pre1 - 2006-10-29 Joseph Jezak <josejx@gentoo.org>
+	* Added block driver abstraction layer
+	* Added qcow disk support
+	* Added compressed dmg support
 mol-0.9.71.1 - 2006-10-28 Joseph Jezak <josejx@gentoo.org>
 	* Added new molvconfig manpage from debian
 	* Compile fixes for 2.6.19
