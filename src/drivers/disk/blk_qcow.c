@@ -30,16 +30,31 @@
 
 #include "blk_qcow.h"
 
-static int decompress_cluster(BDRVQcowState *s, u64 cluster_offset);
+static int decompress_cluster(BDRVQCowState *s, u64 cluster_offset);
 
-int qcow_open(bdev_desc_t *bdev)
+int qcow_open(int fd, bdev_desc_t *bdev) 
 {
-    printm("Opening qcow device...");
-    s = bdev->cow_state;
-    /* int len */
     int i, shift;
     QCowHeader header;
-    s->fd = bdev->fd;
+    
+    bdev->priv = malloc( sizeof (BDRVQCowState) );
+    if(bdev->priv == NULL)
+	    goto fail;
+    BDRVQCowState *s = QCOW_PRIV(bdev);
+    CLEAR( *s );
+    printm("Opening qcow device...");
+
+    /* Init the bdev struct */
+    bdev->read = &wrap_read;
+    bdev->write = &wrap_write;
+    bdev->real_read = &qcow_read;
+    bdev->real_write = &qcow_write;
+    bdev->seek = &qcow_seek;
+    bdev->close = &qcow_close;
+    bdev->fd = fd;
+    	
+    s->fd = fd;
+    
     lseek(s->fd, 0, SEEK_SET);
     if (read(s->fd, &header, sizeof(header)) != sizeof(header))
         goto fail;
@@ -47,10 +62,8 @@ int qcow_open(bdev_desc_t *bdev)
 
     header.magic = be32_to_cpu(header.magic);
     header.version = be32_to_cpu(header.version);
-    /* Not used...
     header.backing_file_offset = be64_to_cpu(header.backing_file_offset);
     header.backing_file_size = be32_to_cpu(header.backing_file_size);
-    */
     header.mtime = be32_to_cpu(header.mtime);
     header.size = be64_to_cpu(header.size);
     header.crypt_method = be32_to_cpu(header.crypt_method);
@@ -64,7 +77,7 @@ int qcow_open(bdev_desc_t *bdev)
         goto fail;
     s->crypt_method_header = header.crypt_method;
     if (s->crypt_method_header)
-        bdev->flags &= OSI_BLK_ENCRYPTED;
+        bdev->flags &= BF_ENCRYPTED;
     s->cluster_bits = header.cluster_bits;
     s->cluster_size = 1 << s->cluster_bits;
     s->cluster_sectors = 1 << (s->cluster_bits - 9);
@@ -97,18 +110,19 @@ int qcow_open(bdev_desc_t *bdev)
     s->cluster_data = malloc(s->cluster_size);
     if (!s->cluster_data)
     s->cluster_cache_offset = -1;
-    /* read the backing file name */
-    /* Unused...
     if (header.backing_file_offset != 0) {
+	printm("Backing files broken for now...\n");
+	goto fail;
+    	/* FIXME
         len = header.backing_file_size;
         if (len > 1023)
             len = 1023;
         lseek(s->fd, header.backing_file_offset, SEEK_SET);
-        if (read(s->fd, bs->backing_file, len) != len)
+        if (read(s->fd, s->backing_file, len) != len)
             goto fail;
-        bs->backing_file[len] = '\0';
+        s->backing_file[len] = '\0';
+    	*/
     }
-    */
     printm("[ok]\n");
     return 0;
 
@@ -129,7 +143,7 @@ int qcow_open(bdev_desc_t *bdev)
 /* The crypt function is compatible with the linux cryptoloop
    algorithm for < 4 GB images. NOTE: out_buf == in_buf is
    supported */
-static void encrypt_sectors(BDRVQcowState *s, u64 sector_num,
+static void encrypt_sectors(BDRVQCowState *s, u64 sector_num,
                             u8 *out_buf, const u8 *in_buf,
                             int nb_sectors, int enc,
                             const AES_KEY *key)
@@ -151,7 +165,10 @@ static void encrypt_sectors(BDRVQcowState *s, u64 sector_num,
     }
 }
 
-/* 'allocate' is:
+/* 
+ * offset is in bytes
+ * 
+ * 'allocate' is:
  *
  * 0 to not allocate.
  *
@@ -164,12 +181,12 @@ static void encrypt_sectors(BDRVQcowState *s, u64 sector_num,
  *
  * return 0 if not allocated.
  */
-static u64 get_cluster_offset(ablk_device_t *ad,
+static u64 get_cluster_offset(bdev_desc_t *bdev, 
                                    u64 offset, int allocate,
                                    int compressed_size,
                                    int n_start, int n_end)
 {
-    BDRVQcowState *s = ad->bdev->cow_state;
+    BDRVQCowState *s = QCOW_PRIV(bdev);
     int min_index, i, j, l1_index, l2_index;
     u64 l2_offset, *l2_table, cluster_offset, tmp;
     u32 min_count;
@@ -319,7 +336,7 @@ static int decompress_buffer(u8 *out_buf, int out_buf_size,
     return 0;
 }
                               
-static int decompress_cluster(BDRVQcowState *s, u64 cluster_offset)
+static int decompress_cluster(BDRVQCowState *s, u64 cluster_offset)
 {
     int ret, csize;
     u64 coffset;
@@ -341,16 +358,21 @@ static int decompress_cluster(BDRVQcowState *s, u64 cluster_offset)
     return 0;
 }
 
-int qcow_read(ablk_device_t *ad, u64 sector_num, 
-                     u8 *buf, int nb_sectors)
+/* nb_bytes is the number of bytes to read in */
+int qcow_read(bdev_desc_t *bdev, u8 * buf, int nb_bytes)
 {
-    BDRVQcowState *s = ad->bdev->cow_state;
+    BDRVQCowState *s = QCOW_PRIV(bdev);
     int ret, index_in_cluster, n;
     u64 cluster_offset;
-    
+    int nb_sectors = ceil(nb_bytes / 512ULL);
+    u8 * buf_start = buf;
+//    int dbg;
+
+    printm("\nQCow Read from sector: %ld", s->seek_sector);
+   
     while (nb_sectors > 0) {
-        cluster_offset = get_cluster_offset(ad, sector_num << 9, 0, 0, 0, 0);
-        index_in_cluster = sector_num & (s->cluster_sectors - 1);
+        cluster_offset = get_cluster_offset(bdev, s->seek_sector << 9, 0, 0, 0, 0);
+        index_in_cluster = s->seek_sector & (s->cluster_sectors - 1);
         n = s->cluster_sectors - index_in_cluster;
         if (n > nb_sectors)
             n = nb_sectors;
@@ -366,38 +388,51 @@ int qcow_read(ablk_device_t *ad, u64 sector_num,
             if (ret != n * 512) 
                 return -1;
             if (s->crypt_method) {
-                encrypt_sectors(s, sector_num, buf, buf, n, 0, 
+                encrypt_sectors(s, s->seek_sector, buf, buf, n, 0, 
                                 &s->aes_decrypt_key);
             }
         }
         nb_sectors -= n;
-        sector_num += n;
+        s->seek_sector += n;
         buf += n * 512;
     }
-    return 0;
+   
+    /*
+    printm("\nResult of reading %i bytes:\n\t", buf-buf_start );
+    for(dbg=0; dbg<buf - buf_start; dbg++) {
+	printm ("%02X ",buf_start[dbg]);
+	if(!((dbg+1)%0x20))
+		printm("\n\t");
+    }
+    */	    
+    
+    return buf - buf_start;
 }
 
-int qcow_write(ablk_device_t *ad, u64 sector_num, 
-                     const u8 *buf, int nb_bytes)
+int qcow_write(bdev_desc_t *bdev, u8 * buf, int nb_bytes)
 {
-    BDRVQcowState *s = ad->bdev->cow_state;
+    BDRVQCowState *s = QCOW_PRIV(bdev);
     int ret, index_in_cluster, n;
-    int nb_sectors = ceil(nb_bytes / 512);
+    u8 * buf_start = buf;
     u64 cluster_offset;
+    int nb_sectors = ceil(nb_bytes / 512);
+//    int dbg;
     
+    printm("\nQCow Write to sector: %ld", s->seek_sector);
+
     while (nb_sectors > 0) {
-        index_in_cluster = sector_num & (s->cluster_sectors - 1);
+        index_in_cluster = s->seek_sector & (s->cluster_sectors - 1);
         n = s->cluster_sectors - index_in_cluster;
         if (n > nb_sectors)
             n = nb_sectors;
-        cluster_offset = get_cluster_offset(ad, sector_num << 9, 1, 0, 
+        cluster_offset = get_cluster_offset(bdev, s->seek_sector << 9, 1, 0, 
                                             index_in_cluster, 
                                             index_in_cluster + n);
         if (!cluster_offset)
             return -1;
         lseek(s->fd, cluster_offset + index_in_cluster * 512, SEEK_SET);
         if (s->crypt_method) {
-            encrypt_sectors(s, sector_num, s->cluster_data, buf, n, 1,
+            encrypt_sectors(s, s->seek_sector, s->cluster_data, buf, n, 1,
                             &s->aes_encrypt_key);
             ret = write(s->fd, s->cluster_data, n * 512);
         } else {
@@ -406,23 +441,36 @@ int qcow_write(ablk_device_t *ad, u64 sector_num,
         if (ret != n * 512) 
             return -1;
         nb_sectors -= n;
-        sector_num += n;
+        s->seek_sector += n;
         buf += n * 512;
     }
+    
+    /*
+    printm("\nWriting %i bytes:\n\t", buf-buf_start );
+    for(dbg=0; dbg<buf - buf_start; dbg++) {
+	printm ("%02X ",buf_start[dbg]);
+	if(!((dbg+1)%0x20))
+		printm("\n\t");
+    }
+    */
+    
     s->cluster_cache_offset = -1; /* disable compressed cache */
-    return nb_bytes;
+    return buf - buf_start;
 }
 
-void qcow_set_seek(ablk_device_t *ad, long seek_block){
-    ad->bdev->cow_state->seek_block = seek_block;
+int qcow_seek(bdev_desc_t *bdev, long block, long offset){
+    printm("\nSeeking to %ld\n", (long)((block + offset) / 512ULL));
+    QCOW_PRIV(bdev)->seek_sector = (block + offset) / 512ULL;
+    return 0;
 }
 
 void qcow_close(bdev_desc_t *bdev)
 {
-    BDRVQcowState *s = bdev->cow_state;
+    BDRVQCowState *s = QCOW_PRIV(bdev);
     free(s->l1_table);
     free(s->l2_cache);
     free(s->cluster_cache);
     free(s->cluster_data);
     close(s->fd);
+    free(s);
 }

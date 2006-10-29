@@ -17,6 +17,7 @@
 
 #include "mol_config.h"
 
+#include "byteorder.h"
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/uio.h>
@@ -29,6 +30,11 @@
 #include "llseek.h"
 #include "booter.h"
 #include "driver_mgr.h"
+
+/* Disk Type Includes */
+#include "blk_raw.h"
+#include "blk_qcow.h"
+#include "blk_dmg.h"
 
 #define BLKFLSBUF  _IO(0x12,97)		/* from <linux/fs.h> */
 
@@ -62,6 +68,10 @@ enum { kMacVolumes, kLinuxDisks };
 #define kDiskTypeHFS		4
 #define kDiskTypeUFS		8
 #define kDiskTypePartitioned	16
+#define kDiskTypeRaw		32
+#define kDiskTypeQCow		64
+#define kDiskTypeDMG		128
+
 
 static bdev_desc_t 		*s_all_disks;
 
@@ -70,33 +80,78 @@ static bdev_desc_t 		*s_all_disks;
 /*	misc								*/
 /************************************************************************/
 
-/* volname is allocated */
 static int
-inspect_disk( int fd, char **type, char **volname )
+find_disk_type(int fd, char *name, bdev_desc_t *bdev)
 {
 	char buf[512];
+
+	if ( pread(fd, buf, 512, 0) != 512 )
+		return kDiskTypeUnknown;
+	
+	if ( QCOW_MAGIC == be32_to_cpu(((QCowHeader *)buf)->magic) ) {
+		printm("Found QCOW Disk!\n");
+		qcow_open(fd, bdev);
+		return kDiskTypeQCow;
+	}
+
+	/* Check for dmg disks */
+	if (strlen(name) > 4 && !strncmp(name + strlen(name) - 4, ".dmg", 4) &&
+		((desc_map_t *)buf)->sbSig != DESC_MAP_SIGNATURE ) {
+		printm("Found Compressed DMG Disk!\n");
+		dmg_open(fd, bdev);
+		return kDiskTypeDMG;		
+	}
+
+	/* Otherwise it's a raw disk */
+	printm("Found RAW disk!\n");
+	raw_open(fd, bdev);	
+	return kDiskTypeRaw;
+}
+
+
+
+/* volname is allocated */
+static int
+inspect_disk( bdev_desc_t *bdev, char **typestr, char **volname, int type)
+{
+	struct iovec vec;
+	char buf[512];
+	vec.iov_base = buf;
+	vec.iov_len = 512;
 	desc_map_t *dmap = (desc_map_t*)buf;
 	hfs_mdb_t *mdb = (hfs_mdb_t*)buf;
 	int signature;
 
-	*type = "Disk";
-	*volname = NULL;
+	*typestr = "Disk";
+	*volname = NULL;	
 
-	if( pread(fd, buf, 512, 0) != 512 )
+	if(type == kDiskTypeUnknown) {
+		*volname = strdup("- Unknown -");
 		return kDiskTypeUnknown;
-	
+	}
+
+	/* Read the first 512 bytes of the disk for identification */
+	bdev->seek(bdev, 0, 0);
+	if( bdev->read(bdev, &vec, 1) != 512 ) {
+		printm("Didn't get 512 bytes\n");
+		return kDiskTypeUnknown;
+	}
+
 	if( dmap->sbSig == DESC_MAP_SIGNATURE ) {
 		*volname = strdup("- Partioned -");
 		return kDiskTypePartitioned;
 	}
 
-	if( pread(fd, buf, 512, 2*512) != 512 )
+	bdev->seek(bdev, 2, 0);
+	if( bdev->read(bdev, &vec, 1) != 512 ) {
+		printm("Didn't get 512 bytes2\n");
 		return kDiskTypeUnknown;
-	
+	}
+
 	signature = hfs_get_ushort(mdb->drSigWord);
 
 	if( signature == HFS_PLUS_SIGNATURE ) {
-		*type = "Unembedded HFS+";
+		*typestr = "Unembedded HFS+";
 		return kDiskTypeHFSPlus;
 	}
 
@@ -107,10 +162,10 @@ inspect_disk( int fd, char **type, char **volname )
 		*volname = strdup( vname );
 
 		if( hfs_get_ushort(mdb->drEmbedSigWord) == HFS_PLUS_SIGNATURE ) {
-			*type = "HFS+";
+			*typestr = "HFS+";
 			return kDiskTypeHFSPlus;
 		}
-		*type = "HFS";
+		*typestr = "HFS";
 		return kDiskTypeHFS;
 	}
 	return kDiskTypeUnknown;
@@ -146,17 +201,20 @@ report_disk_export( bdev_desc_t *bd, const char *type )
 }
 
 static void
-register_disk( const char *typestr, const char *name, const char *vol_name, int fd, long flags, ulong num_blocks )
+register_disk(bdev_desc_t *bdev, const char *typestr, const char *name,
+	      const char *vol_name, int fd, long flags, ulong blocks )
 {
-	bdev_desc_t *bdev = malloc( sizeof(bdev_desc_t) );
-	CLEAR( *bdev );
+	if(NULL == bdev) {
+		bdev = malloc( sizeof(bdev_desc_t) );
+		CLEAR( *bdev );
+	}
 
 	bdev->dev_name = strdup(name);
 	bdev->vol_name = vol_name ? strdup(vol_name) : NULL;
 
 	bdev->fd = fd;
-	bdev->flags = flags;
-	bdev->size = 512ULL * num_blocks;
+	bdev->flags |= flags;
+	bdev->size = 512ULL * blocks;
 
 	bdev->priv_next = s_all_disks;
 	s_all_disks = bdev;
@@ -172,23 +230,38 @@ register_disk( const char *typestr, const char *name, const char *vol_name, int 
 static int
 open_mac_disk( char *name, int flags, int constructed )
 {
+	bdev_desc_t *bdev;
 	int type, fd, ro_fallback, ret=0;
 	char *volname, *typestr;
-	uint size;
 	
 	if( (fd=disk_open(name, flags, &ro_fallback, constructed)) < 0 )
 		return -1;
-	type = inspect_disk( fd, &typestr, &volname );
 
+	/* Alloc the block device */
+	bdev = (bdev_desc_t *)malloc( sizeof(bdev_desc_t) );
+	if(!bdev) {
+		close(fd);
+		return -1;
+	}
+	CLEAR( *bdev );
+
+	/* Finds disk type and performs init for bdev pointers */
+	type = find_disk_type(fd, name, bdev);
+	
+	/* Inspect the disk to ensure it's valid */
+	type |= inspect_disk(bdev, &typestr, &volname, type);
+	
 	if( ro_fallback )
 		flags &= ~BF_ENABLE_WRITE;
 
 	if( type & (kDiskTypeHFSPlus | kDiskTypeHFS | kDiskTypeUFS) ) {
-		/* standard mac volumes */
-	} else if( type & kDiskTypePartitioned ) {
+		/* Standard Mac Volumes, nothing to do  */
+	} 
+	else if( type & kDiskTypePartitioned ) {
 		if( constructed )
 			ret = -1;
-	} else {
+	}
+	else {
 		/* unknown disk type */
 		if( !(flags & BF_FORCE) ) {
 			if( !constructed )
@@ -196,21 +269,26 @@ open_mac_disk( char *name, int flags, int constructed )
 			ret = -1;
 		}
 	}
-	size = get_file_size_in_blks(fd);
 
 	/* detect boot-strap partitions by the small size */
 	if( (flags & BF_ENABLE_WRITE) && (type & (kDiskTypeHFSPlus | kDiskTypeHFS)) ) {
 
-		if( size/2048 < BOOTSTRAP_SIZE_MB && !(flags & BF_FORCE) ) {
+		if( bdev->size/1024 < BOOTSTRAP_SIZE_MB && !(flags & BF_FORCE) ) {
 			printm("----> %s might be a boot-strap partition.\n", name );
 			ret = -1;
 		}
 	}
 
-	if( !ret )
-		register_disk( typestr, name, volname, fd, flags, get_file_size_in_blks(fd) );
-	else
-		close( fd );
+	if( !ret ) {
+		/* Register the disk with MOL */
+		register_disk( bdev, typestr, name, volname, bdev->fd, flags, bdev->size / 512ULL );
+	}
+	else {
+		/* Close the block device */
+		close( bdev->fd );
+		/* Free the block dev struct */
+		free(bdev);
+	}
 
 	if( volname )
 		free( volname );
@@ -224,7 +302,7 @@ setup_mac_disk( char *name, int flags )
 	char buf[32], **pp;
 	int i, n;
 	
-	/* /dev/hda type device? Substitute with /dev/hdaX */
+	/* Check for entire device (/dev/hda) and substitute with /dev/hdaX */
 	for( pp=dev_list; !(flags & BF_WHOLE_DISK) && *pp; pp++ ) {
 		if( strncmp(*pp, name, strlen(*pp)) || strlen(name) != strlen(*pp)+1 )
 			continue;
@@ -243,6 +321,18 @@ setup_mac_disk( char *name, int flags )
 }
 
 
+static void
+setup_linux_disk( char *name, int flags )
+{
+	int fd, ro_fallback=0;
+	printm("FIXME: non RAW disks won't work with Linux yet!\n");
+	if( (fd=disk_open( name, flags, &ro_fallback, 0 )) >= 0 ) {
+		if( ro_fallback )
+			flags &= ~BF_ENABLE_WRITE;
+		register_disk(NULL, "Disk", name, NULL, fd, flags, get_file_size_in_blks(fd) );
+	}
+}
+	
 /************************************************************************/
 /*	setup disks							*/
 /************************************************************************/
@@ -265,7 +355,7 @@ setup_disks( char *res_name, int type )
 			flags &= ~BF_ENABLE_WRITE;
 			if( (fd=disk_open( name, flags, &ro_fallback, 0 )) < 0 )
 				continue;
-			register_disk( "CD", name, "CD/DVD", fd, flags, 0 );
+			register_disk(NULL, "CD", name, "CD/DVD", fd, flags, 0 );
 			continue;
 		}
 
@@ -275,11 +365,7 @@ setup_disks( char *res_name, int type )
 			break;
 
 		case kLinuxDisks:
-			if( (fd=disk_open( name, flags, &ro_fallback, 0 )) >= 0 ) {
-				if( ro_fallback )
-					flags &= ~BF_ENABLE_WRITE;
-				register_disk( "Disk", name, NULL, fd, flags, get_file_size_in_blks(fd) );
-			}
+			setup_linux_disk( name, flags );
 			break;
 		}
 	}
@@ -292,75 +378,6 @@ setup_disks( char *res_name, int type )
 		if( !(bdev->flags & BF_BOOT1) )
 			bdev->flags &= ~BF_BOOT;
 }
-
-
-
-/************************************************************************/
-/*	checksum calculations						*/
-/************************************************************************/
-
-#if 0
-/* Calculate a checksum for the HFS(+) MDB (master directory block). 
- * In particular, the modification date is included in the checksum.
- */
-static int 
-get_hfs_checksum( drive_t *drv, ulong *checksum )
-{
-	hfs_plus_mdb_t mdb_plus;
-	hfs_mdb_t mdb;
-	ulong val=0;
-
-	blk_lseek( drv->fd, 2, SEEK_SET );
-	read( drv->fd, &mdb, sizeof(mdb) );
-	if( hfs_get_ushort(mdb.drSigWord) != HFS_SIGNATURE )
-		return -1;
-
-	/* printm("HFS volume detected\n"); */
-
-	if( hfs_get_ushort(mdb.drEmbedSigWord) == HFS_PLUS_SIGNATURE ) {
-		int sblock = hfs_get_ushort(mdb.drAlBlSt);
-		sblock += (hfs_get_uint(mdb.drAlBlkSiz) / 512) * (hfs_get_uint(mdb.drEmbedExtent) >> 16);
-
-		blk_lseek( drv->fd, sblock + 2, SEEK_SET );
-		read( drv->fd, &mdb_plus, sizeof(mdb_plus) );
-
-		if( mdb_plus.signature != HFS_PLUS_SIGNATURE ) {
-			printm("HFS_PLUS_SIGNATURE expected\n");
-			return -1;
-		}
-		val += calc_checksum( (char*)&mdb_plus, sizeof(mdb_plus) );
-
-		/* printm("HFS+ volume detected\n"); */
-	}
-	val += calc_checksum( (char*)&mdb, sizeof(mdb_plus) );
-	*checksum = val;
-
-	/* printm("HFS-MDB checksum %08lX\n", *checksum ); */
-	return 0;
-}
-
-static int
-get_mdb_checksum( drive_t *drv, ulong *checksum )
-{
-	char buf[2048];
-
-	if( !get_hfs_checksum( drv, checksum ) )
-		return 0;
-
-	if( !drv->locked || !(drv->flags & bf_force) ) {
-		printm("Save session does not support r/w volumes which are not HFS(+)\n");
-		return 1;
-	}
-
-	/* fallback - read the first four sectors */
-	blk_lseek( drv->fd, 0, SEEK_SET );
-	read( drv->fd, &buf, sizeof(buf) );
-
-	*checksum = calc_checksum( buf, sizeof(buf) );
-	return 0;
-}
-#endif
-
 
 /************************************************************************/
 /*	Global interface						*/
@@ -399,6 +416,9 @@ bdev_close_volume( bdev_desc_t *dev )
 		free( dev->dev_name );
 		if( dev->vol_name )
 			free( dev->vol_name );
+
+		if( dev->close != NULL)
+			dev->close(dev);
 		
 		if( dev->fd != -1 ) {
 			/* XXX: the ioctl should only be done for block devices! */

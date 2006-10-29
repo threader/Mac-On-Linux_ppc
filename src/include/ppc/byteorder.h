@@ -40,6 +40,22 @@ static __inline__ void st_le32(ulong *addr, ulong val) {
         __asm__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr) );
 }
 
+#define cpu_to_be64( x ) ( x )
+#define cpu_to_le64( x ) \
+({ \
+	u64 __x = (x); \
+	((u64)( \
+		(u64)(((u64)(__x) & (u64)0x00000000000000ffULL) << 56) | \
+		(u64)(((u64)(__x) & (u64)0x000000000000ff00ULL) << 40) | \
+		(u64)(((u64)(__x) & (u64)0x0000000000ff0000ULL) << 24) | \
+		(u64)(((u64)(__x) & (u64)0x00000000ff000000ULL) <<  8) | \
+	        (u64)(((u64)(__x) & (u64)0x000000ff00000000ULL) >>  8) | \
+		(u64)(((u64)(__x) & (u64)0x0000ff0000000000ULL) >> 24) | \
+		(u64)(((u64)(__x) & (u64)0x00ff000000000000ULL) >> 40) | \
+		(u64)(((u64)(__x) & (u64)0xff00000000000000ULL) >> 56) )); \
+})
+
+#define cpu_to_be32( x ) ( x )
 #define cpu_to_le32( x ) \
 ({ \
         u32 __x = (x); \
@@ -50,7 +66,9 @@ static __inline__ void st_le32(ulong *addr, ulong val) {
                 (((u32)(__x) & (u32)0xff000000UL) >> 24) )); \
 })
 
-#define cpu_to_le16(x) \
+
+#define cpu_to_be16( x ) ( x )
+#define cpu_to_le16( x ) \
 ({ \
         u16 __x = (x); \
         ((u16)( \

@@ -31,6 +31,7 @@
 #ifndef _H_BLK_QCOW
 #define _H_BLK_QCOW 
 
+#include "mol_config.h"
 #include <zlib.h>
 #include "platform.h"
 #include "byteorder.h"
@@ -44,6 +45,8 @@
 #include <sys/uio.h>
 #include "aes.h"
 #include <math.h>
+#include "disk.h"
+#include "vec_wrap.h"
 
 /**************************************************************/
 /* QEMU COW block driver with compression and encryption support */
@@ -92,16 +95,17 @@ typedef struct BDRVQcowState {
     u32 crypt_method_header;
     AES_KEY aes_encrypt_key;
     AES_KEY aes_decrypt_key;
+    long seek_sector;    /* Current sector */
+} BDRVQCowState;
 
-    /* Current block for seeking */
-    long seek_block;
-} BDRVQcowState;
+/* Private QCOW Struct, bdev is the argument */
+#define QCOW_PRIV(x) ( (BDRVQCowState *)(x->priv) )
 
 /* Function declarations */
-int qcow_open(bdev_desc_t *bdev);
-int qcow_read(ablk_device_t *ad, u64 sector_num, u8 *buf, int nb_sectors);
-int qcow_write(ablk_device_t *ad, u64 sector_num, const u8 *buf, int nb_sectors);
+int qcow_open(int fd, bdev_desc_t *bdev);
+int qcow_read(bdev_desc_t *bdev, u8 *buf, int count);
+int qcow_write(bdev_desc_t *bdev, u8 *buf, int count);
 void qcow_close(bdev_desc_t *bdev);
-void qcow_set_seek(ablk_device_t *ad, long block);
+int qcow_seek(bdev_desc_t *bdev, long block, long offset);
 
 #endif

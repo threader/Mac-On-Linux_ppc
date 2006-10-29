@@ -41,6 +41,7 @@
 #include <errno.h>
 #include <sys/uio.h>
 #include <math.h>
+#include "vec_wrap.h"
 
 typedef struct BDRVDMGState {
     int fd;
@@ -64,14 +65,17 @@ typedef struct BDRVDMGState {
     char* uncompressed_chunk;
     z_stream zstream;
     
-    /* Current block for seeking */
-    long seek_block;
+    /* Current sector we've seeked to */
+    long seek_sector;
 } BDRVDMGState;
 
+/* Private DMG Struct, bdev is the argument */
+#define DMG_PRIV(x) ( (BDRVDMGState *)(x->priv) )
+
 /* Function declarations */
-int dmg_open(bdev_desc_t *bdev);
-int dmg_read(ablk_device_t *ad, u64 sector_num, u8 *buf, int nb_sectors);
+int dmg_open(int fd, bdev_desc_t *bdev);
+int dmg_read(bdev_desc_t *bdev, u8 *buf, int nb_bytes);
 void dmg_close(bdev_desc_t *bdev);
-void dmg_set_seek(ablk_device_t *ad, long block);
+int dmg_seek(bdev_desc_t *bdev, long block, long offset);
 
 #endif
