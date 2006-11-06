@@ -178,6 +178,7 @@ tophys_mol( void *p )
 	if( !phys ) {
 		printk("tophys_mol: VA %08lX translates to 0!\n", (ulong)p );
 	}
+	phys = phys << 12; /* A hack, but I've not figured out why yet */
 	phys += phys ? (ulong)(p-trunc_page(p)) : 0;
 	return phys;
 }
