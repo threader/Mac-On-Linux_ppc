@@ -414,12 +414,12 @@ osip_ablk_sync_io( int sel, int *params )
 	char *buf;
 	struct iovec vec;
 
-	if( channel || ind >= ablk.ndevs || mphys_to_lvptr( mphys, &buf ) )
+	if( channel || ind >= ablk.ndevs || mphys_to_lvptr( mphys, &buf ) ) 
 		return -1;
 
 	bdev = d->bdev;
 
-	if( bdev->fd < 0 || bdev->seek(bdev, blk, 0) < 0 )
+	if( bdev->fd < 0 || bdev->seek(bdev, blk, 0) < 0 ) 
 		return -1;
 
 	vec.iov_len = size;

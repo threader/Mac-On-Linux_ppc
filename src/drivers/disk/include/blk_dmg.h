@@ -30,6 +30,10 @@
 #ifndef _H_BLK_DMG
 #define _H_BLK_DMG
 
+#ifndef _LARGEFILE64_SOURCE
+#define _LARGEFILE64_SOURCE
+#endif /* _LARGEFILE64_SOURCE */
+
 #include <zlib.h>
 #include "platform.h"
 #include "byteorder.h"

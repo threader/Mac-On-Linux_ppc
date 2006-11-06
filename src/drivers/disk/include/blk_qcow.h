@@ -31,6 +31,10 @@
 #ifndef _H_BLK_QCOW
 #define _H_BLK_QCOW 
 
+#ifndef _LARGEFILE64_SOURCE
+#define _LARGEFILE64_SOURCE
+#endif /* _LARGEFILE64_SOURCE */
+
 #include "mol_config.h"
 #include <zlib.h>
 #include "platform.h"
@@ -48,6 +52,7 @@
 #include "disk.h"
 #include "vec_wrap.h"
 
+
 /**************************************************************/
 /* QEMU COW block driver with compression and encryption support */
 
@@ -56,6 +61,8 @@
 
 #define QCOW_CRYPT_NONE 0
 #define QCOW_CRYPT_AES  1
+
+#define QCOW_CLUSTER_SZ	512
 
 #define QCOW_OFLAG_COMPRESSED (1LL << 63)
 
@@ -72,7 +79,7 @@ typedef struct QCowHeader {
     u64 l1_table_offset;
 } QCowHeader;
 
-#define L2_CACHE_SIZE 16
+#define QCOW_L2_CACHE_SIZE 16
 
 typedef struct BDRVQcowState {
     int fd;
@@ -86,8 +93,8 @@ typedef struct BDRVQcowState {
     u64 l1_table_offset;
     u64 *l1_table;
     u64 *l2_cache;
-    u64 l2_cache_offsets[L2_CACHE_SIZE];
-    u32 l2_cache_counts[L2_CACHE_SIZE];
+    u64 l2_cache_offsets[QCOW_L2_CACHE_SIZE];
+    u32 l2_cache_counts[QCOW_L2_CACHE_SIZE];
     u8 *cluster_cache;
     u8 *cluster_data;
     u64 cluster_cache_offset;
@@ -95,7 +102,7 @@ typedef struct BDRVQcowState {
     u32 crypt_method_header;
     AES_KEY aes_encrypt_key;
     AES_KEY aes_decrypt_key;
-    long seek_sector;    /* Current sector */
+    u64 seek_sector;    /* Current sector */
 } BDRVQCowState;
 
 /* Private QCOW Struct, bdev is the argument */
