@@ -89,7 +89,6 @@ find_disk_type(int fd, char *name, bdev_desc_t *bdev)
 		return kDiskTypeUnknown;
 	
 	if ( QCOW_MAGIC == be32_to_cpu(((QCowHeader *)buf)->magic) ) {
-		printm("Found QCOW Disk!\n");
 		qcow_open(fd, bdev);
 		return kDiskTypeQCow;
 	}
@@ -97,13 +96,11 @@ find_disk_type(int fd, char *name, bdev_desc_t *bdev)
 	/* Check for dmg disks */
 	if (strlen(name) > 4 && !strncmp(name + strlen(name) - 4, ".dmg", 4) &&
 		((desc_map_t *)buf)->sbSig != DESC_MAP_SIGNATURE ) {
-		printm("Found Compressed DMG Disk!\n");
 		dmg_open(fd, bdev);
 		return kDiskTypeDMG;		
 	}
 
 	/* Otherwise it's a raw disk */
-	printm("Found RAW disk!\n");
 	raw_open(fd, bdev);	
 	return kDiskTypeRaw;
 }
@@ -132,10 +129,8 @@ inspect_disk( bdev_desc_t *bdev, char **typestr, char **volname, int type)
 
 	/* Read the first 512 bytes of the disk for identification */
 	bdev->seek(bdev, 0, 0);
-	if( bdev->read(bdev, &vec, 1) != 512 ) {
-		printm("Didn't get 512 bytes\n");
+	if( bdev->read(bdev, &vec, 1) != 512 ) 
 		return kDiskTypeUnknown;
-	}
 
 	if( dmap->sbSig == DESC_MAP_SIGNATURE ) {
 		*volname = strdup("- Partioned -");
@@ -143,10 +138,8 @@ inspect_disk( bdev_desc_t *bdev, char **typestr, char **volname, int type)
 	}
 
 	bdev->seek(bdev, 2, 0);
-	if( bdev->read(bdev, &vec, 1) != 512 ) {
-		printm("Didn't get 512 bytes2\n");
+	if( bdev->read(bdev, &vec, 1) != 512 ) 
 		return kDiskTypeUnknown;
-	}
 
 	signature = hfs_get_ushort(mdb->drSigWord);
 

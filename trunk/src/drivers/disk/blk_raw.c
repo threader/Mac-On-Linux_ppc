@@ -24,18 +24,15 @@ int raw_open(int fd, bdev_desc_t *bdev) {
 
 /* Block to seek to */
 int raw_seek(bdev_desc_t *bdev, long block, long offset) {
-//	printm("%s seeking to %ld, offset: %ld\n", bdev->dev_name, block, offset);
 	return blk_lseek(bdev->fd, block, offset);
 }
 
 /* Read "count" blocks */
 int raw_read(bdev_desc_t *bdev, struct iovec * vec, int count) {
-//	printm("%s reading %i blocks\n", bdev->dev_name, count);
 	return readv(bdev->fd, vec, count);
 }
 
 /* Write "count" blocks */
 int raw_write(bdev_desc_t *bdev, struct iovec * vec, int count) {
-//	printm("%s writing %i blocks\n", bdev->dev_name, count);
 	return writev(bdev->fd, vec, count);
 }

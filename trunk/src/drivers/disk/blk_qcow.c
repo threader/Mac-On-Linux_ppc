@@ -36,13 +36,14 @@ int qcow_open(int fd, bdev_desc_t *bdev)
 {
     int i, shift;
     QCowHeader header;
+    BDRVQCowState *s = NULL;
+    // int len;
     
     bdev->priv = malloc( sizeof (BDRVQCowState) );
     if(bdev->priv == NULL)
 	    goto fail;
-    BDRVQCowState *s = QCOW_PRIV(bdev);
+    s = QCOW_PRIV(bdev);
     CLEAR( *s );
-    printm("Opening qcow device...");
 
     /* Init the bdev struct */
     bdev->read = &wrap_read;
@@ -58,7 +59,6 @@ int qcow_open(int fd, bdev_desc_t *bdev)
     lseek(s->fd, 0, SEEK_SET);
     if (read(s->fd, &header, sizeof(header)) != sizeof(header))
         goto fail;
-    lseek(s->fd, 0, SEEK_SET);
 
     header.magic = be32_to_cpu(header.magic);
     header.version = be32_to_cpu(header.version);
@@ -85,10 +85,10 @@ int qcow_open(int fd, bdev_desc_t *bdev)
     s->l2_size = 1 << s->l2_bits;
     bdev->size = header.size; 
     s->cluster_offset_mask = (1LL << (63 - s->cluster_bits)) - 1;
+
     /* read the level 1 table */
     shift = s->cluster_bits + s->l2_bits;
     s->l1_size = (header.size + (1LL << shift) - 1) >> shift;
-
     s->l1_table_offset = header.l1_table_offset;
     s->l1_table = malloc(s->l1_size * sizeof(u64));
     if (!s->l1_table)
@@ -98,10 +98,11 @@ int qcow_open(int fd, bdev_desc_t *bdev)
         s->l1_size * sizeof(u64))
         goto fail;
     for(i = 0;i < s->l1_size; i++) {
-	    s->l1_table[i] = be64_to_cpu(s->l1_table[1]);
+	    s->l1_table[i] = be64_to_cpu(s->l1_table[i]);
     }
+
     /* alloc L2 cache */
-    s->l2_cache = malloc(s->l2_size * L2_CACHE_SIZE * sizeof(u64));
+    s->l2_cache = malloc(s->l2_size * QCOW_L2_CACHE_SIZE * sizeof(u64));
     if (!s->l2_cache)
         goto fail;
     s->cluster_cache = malloc(s->cluster_size);
@@ -111,9 +112,9 @@ int qcow_open(int fd, bdev_desc_t *bdev)
     if (!s->cluster_data)
     s->cluster_cache_offset = -1;
     if (header.backing_file_offset != 0) {
-	printm("Backing files broken for now...\n");
+    	printm("Sorry backing files are not supported right now!\n");
 	goto fail;
-    	/* FIXME
+    	/*	
         len = header.backing_file_size;
         if (len > 1023)
             len = 1023;
@@ -121,21 +122,19 @@ int qcow_open(int fd, bdev_desc_t *bdev)
         if (read(s->fd, s->backing_file, len) != len)
             goto fail;
         s->backing_file[len] = '\0';
-    	*/
+	*/
     }
-    printm("[ok]\n");
     return 0;
 
  fail:
-    printm("[!!]\n");
     if(s->l1_table)
     	free(s->l1_table);
     if(s->l2_cache)
-	    free(s->l2_cache);
+	free(s->l2_cache);
     if(s->cluster_cache)
-	    free(s->cluster_cache);
+	free(s->cluster_cache);
     if(s->cluster_data) 
-	    free(s->cluster_data);
+	free(s->cluster_data);
     close(s->fd);
     return -1;
 }
@@ -181,22 +180,22 @@ static void encrypt_sectors(BDRVQCowState *s, u64 sector_num,
  *
  * return 0 if not allocated.
  */
-static u64 get_cluster_offset(bdev_desc_t *bdev, 
+static u64 get_cluster_offset(BDRVQCowState *s, 
                                    u64 offset, int allocate,
                                    int compressed_size,
                                    int n_start, int n_end)
 {
-    BDRVQCowState *s = QCOW_PRIV(bdev);
     int min_index, i, j, l1_index, l2_index;
     u64 l2_offset, *l2_table, cluster_offset, tmp;
     u32 min_count;
     int new_l2_table;
-    
+
+    /* Find the L1 Table Offset */
     l1_index = offset >> (s->l2_bits + s->cluster_bits);
     l2_offset = s->l1_table[l1_index];
     new_l2_table = 0;
     if (!l2_offset) {
-        if (!allocate)
+        if (!allocate) 
             return 0;
         /* allocate a new l2 entry */
         l2_offset = lseek(s->fd, 0, SEEK_END);
@@ -206,15 +205,15 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
         s->l1_table[l1_index] = l2_offset;
         tmp = cpu_to_be64(l2_offset);
         lseek(s->fd, s->l1_table_offset + l1_index * sizeof(tmp), SEEK_SET);
-        if (write(s->fd, &tmp, sizeof(tmp)) != sizeof(tmp))
+        if (write(s->fd, &tmp, sizeof(tmp)) != sizeof(tmp)) 
             return 0;
         new_l2_table = 1;
     }
-    for(i = 0; i < L2_CACHE_SIZE; i++) {
+    for(i = 0; i < QCOW_L2_CACHE_SIZE; i++) {
         if (l2_offset == s->l2_cache_offsets[i]) {
             /* increment the hit count */
             if (++s->l2_cache_counts[i] == 0xffffffff) {
-                for(j = 0; j < L2_CACHE_SIZE; j++) {
+                for(j = 0; j < QCOW_L2_CACHE_SIZE; j++) {
                     s->l2_cache_counts[j] >>= 1;
                 }
             }
@@ -225,7 +224,7 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
     /* not found: load a new entry in the least used one */
     min_index = 0;
     min_count = 0xffffffff;
-    for(i = 0; i < L2_CACHE_SIZE; i++) {
+    for(i = 0; i < QCOW_L2_CACHE_SIZE; i++) {
         if (s->l2_cache_counts[i] < min_count) {
             min_count = s->l2_cache_counts[i];
             min_index = i;
@@ -236,11 +235,11 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
     if (new_l2_table) {
         memset(l2_table, 0, s->l2_size * sizeof(u64));
         if (write(s->fd, l2_table, s->l2_size * sizeof(u64)) !=
-            s->l2_size * sizeof(u64))
+            s->l2_size * sizeof(u64)) 
             return 0;
     } else {
-        if (read(s->fd, l2_table, s->l2_size * sizeof(u64)) != 
-            s->l2_size * sizeof(u64))
+        if (read(s->fd, l2_table, s->l2_size * sizeof(u64)) !=
+            s->l2_size * sizeof(u64)) 
             return 0;
     }
     s->l2_cache_offsets[min_index] = l2_offset;
@@ -248,9 +247,9 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
  found:
     l2_index = (offset >> s->cluster_bits) & (s->l2_size - 1);
     cluster_offset = be64_to_cpu(l2_table[l2_index]);
-    if (!cluster_offset || 
+    if (!cluster_offset ||
         ((cluster_offset & QCOW_OFLAG_COMPRESSED) && allocate == 1)) {
-        if (!allocate)
+        if (!allocate) 
             return 0;
         /* allocate a new cluster */
         if ((cluster_offset & QCOW_OFLAG_COMPRESSED) &&
@@ -261,31 +260,31 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
             if (decompress_cluster(s, cluster_offset) < 0)
                 return 0;
             cluster_offset = lseek(s->fd, 0, SEEK_END);
-            cluster_offset = (cluster_offset + s->cluster_size - 1) & 
+            cluster_offset = (cluster_offset + s->cluster_size - 1) &
                 ~(s->cluster_size - 1);
             /* write the cluster content */
             lseek(s->fd, cluster_offset, SEEK_SET);
-            if (write(s->fd, s->cluster_cache, s->cluster_size) != 
-                s->cluster_size)
+            if (write(s->fd, s->cluster_cache, s->cluster_size) !=
+                s->cluster_size) 
                 return -1;
         } else {
             cluster_offset = lseek(s->fd, 0, SEEK_END);
             if (allocate == 1) {
                 /* round to cluster size */
-                cluster_offset = (cluster_offset + s->cluster_size - 1) & 
+                cluster_offset = (cluster_offset + s->cluster_size - 1) &
                     ~(s->cluster_size - 1);
                 ftruncate(s->fd, cluster_offset + s->cluster_size);
                 /* if encrypted, we must initialize the cluster
                    content which won't be written */
-                if (s->crypt_method && 
+                if (s->crypt_method &&
                     (n_end - n_start) < s->cluster_sectors) {
                     u64 start_sect;
                     start_sect = (offset & ~(s->cluster_size - 1)) >> 9;
                     memset(s->cluster_data + 512, 0xaa, 512);
                     for(i = 0; i < s->cluster_sectors; i++) {
                         if (i < n_start || i >= n_end) {
-                            encrypt_sectors(s, start_sect + i, 
-                                            s->cluster_data, 
+                            encrypt_sectors(s, start_sect + i,
+                                            s->cluster_data,
                                             s->cluster_data + 512, 1, 1,
                                             &s->aes_encrypt_key);
                             lseek(s->fd, cluster_offset + i * 512, SEEK_SET);
@@ -295,7 +294,7 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
                     }
                 }
             } else {
-                cluster_offset |= QCOW_OFLAG_COMPRESSED | 
+                cluster_offset |= QCOW_OFLAG_COMPRESSED |
                     (u64)compressed_size << (63 - s->cluster_bits);
             }
         }
@@ -306,7 +305,7 @@ static u64 get_cluster_offset(bdev_desc_t *bdev,
         if (write(s->fd, &tmp, sizeof(tmp)) != sizeof(tmp))
             return 0;
     }
-    return cluster_offset;
+    return cluster_offset;    
 }
 
 static int decompress_buffer(u8 *out_buf, int out_buf_size,
@@ -362,17 +361,15 @@ static int decompress_cluster(BDRVQCowState *s, u64 cluster_offset)
 int qcow_read(bdev_desc_t *bdev, u8 * buf, int nb_bytes)
 {
     BDRVQCowState *s = QCOW_PRIV(bdev);
+    u64 sector_num = s->seek_sector;
     int ret, index_in_cluster, n;
     u64 cluster_offset;
     int nb_sectors = ceil(nb_bytes / 512ULL);
     u8 * buf_start = buf;
-//    int dbg;
-
-    printm("\nQCow Read from sector: %ld", s->seek_sector);
-   
+    
     while (nb_sectors > 0) {
-        cluster_offset = get_cluster_offset(bdev, s->seek_sector << 9, 0, 0, 0, 0);
-        index_in_cluster = s->seek_sector & (s->cluster_sectors - 1);
+        cluster_offset = get_cluster_offset(s, sector_num << 9, 0, 0, 0, 0);
+        index_in_cluster = sector_num & (s->cluster_sectors - 1);
         n = s->cluster_sectors - index_in_cluster;
         if (n > nb_sectors)
             n = nb_sectors;
@@ -388,24 +385,15 @@ int qcow_read(bdev_desc_t *bdev, u8 * buf, int nb_bytes)
             if (ret != n * 512) 
                 return -1;
             if (s->crypt_method) {
-                encrypt_sectors(s, s->seek_sector, buf, buf, n, 0, 
+                encrypt_sectors(s, sector_num, buf, buf, n, 0,
                                 &s->aes_decrypt_key);
             }
         }
         nb_sectors -= n;
-        s->seek_sector += n;
+        sector_num += n;
         buf += n * 512;
     }
-   
-    /*
-    printm("\nResult of reading %i bytes:\n\t", buf-buf_start );
-    for(dbg=0; dbg<buf - buf_start; dbg++) {
-	printm ("%02X ",buf_start[dbg]);
-	if(!((dbg+1)%0x20))
-		printm("\n\t");
-    }
-    */	    
-    
+    s->seek_sector = sector_num;
     return buf - buf_start;
 }
 
@@ -415,58 +403,47 @@ int qcow_write(bdev_desc_t *bdev, u8 * buf, int nb_bytes)
     int ret, index_in_cluster, n;
     u8 * buf_start = buf;
     u64 cluster_offset;
+    u64 sector_num = s->seek_sector;
     int nb_sectors = ceil(nb_bytes / 512);
-//    int dbg;
     
-    printm("\nQCow Write to sector: %ld", s->seek_sector);
-
     while (nb_sectors > 0) {
-        index_in_cluster = s->seek_sector & (s->cluster_sectors - 1);
+        index_in_cluster = sector_num & (s->cluster_sectors - 1);
         n = s->cluster_sectors - index_in_cluster;
         if (n > nb_sectors)
             n = nb_sectors;
-        cluster_offset = get_cluster_offset(bdev, s->seek_sector << 9, 1, 0, 
-                                            index_in_cluster, 
+        cluster_offset = get_cluster_offset(s, sector_num << 9, 1, 0,
+                                            index_in_cluster,
                                             index_in_cluster + n);
         if (!cluster_offset)
             return -1;
         lseek(s->fd, cluster_offset + index_in_cluster * 512, SEEK_SET);
         if (s->crypt_method) {
-            encrypt_sectors(s, s->seek_sector, s->cluster_data, buf, n, 1,
+            encrypt_sectors(s, sector_num, s->cluster_data, buf, n, 1,
                             &s->aes_encrypt_key);
             ret = write(s->fd, s->cluster_data, n * 512);
         } else {
             ret = write(s->fd, buf, n * 512);
         }
-        if (ret != n * 512) 
+        if (ret != n * 512)
             return -1;
         nb_sectors -= n;
-        s->seek_sector += n;
+        sector_num += n;
         buf += n * 512;
     }
-    
-    /*
-    printm("\nWriting %i bytes:\n\t", buf-buf_start );
-    for(dbg=0; dbg<buf - buf_start; dbg++) {
-	printm ("%02X ",buf_start[dbg]);
-	if(!((dbg+1)%0x20))
-		printm("\n\t");
-    }
-    */
-    
+    s->seek_sector = sector_num;
     s->cluster_cache_offset = -1; /* disable compressed cache */
     return buf - buf_start;
 }
 
 int qcow_seek(bdev_desc_t *bdev, long block, long offset){
-    printm("\nSeeking to %ld\n", (long)((block + offset) / 512ULL));
-    QCOW_PRIV(bdev)->seek_sector = (block + offset) / 512ULL;
+    QCOW_PRIV(bdev)->seek_sector = (u64) (block + offset);
     return 0;
 }
 
 void qcow_close(bdev_desc_t *bdev)
 {
     BDRVQCowState *s = QCOW_PRIV(bdev);
+    fsync(s->fd);
     free(s->l1_table);
     free(s->l2_cache);
     free(s->cluster_cache);
