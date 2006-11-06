@@ -11,6 +11,9 @@ obj-m		:= _kuname.o mol.o
 PERFOBJS	= $(addprefix $(obj)/, $(PERFOBJS_))
 MOL_ASMFLAGS	= $(CPPFLAGS) $(ASMFLAGS) $(INCLUDES) -D__ASSEMBLY__
 
+### This is ugly, but it should fix the issues people have building as a user
+T		= "/tmp"
+
 
 $(obj)/_traps.o:	$(src)/asm_offsets.h $(src)/traps.S $(src)/*.S $(src)/*.h
 
