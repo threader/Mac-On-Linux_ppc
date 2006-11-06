@@ -17,10 +17,10 @@ molsyms:		${lib}/mol.symbols
 session:		0
 boot_type:		newworld
 
-logfile:		/var/log/mol.${session}.log
+logfile:		${var}/log/mol.${session}.log
 
 ifeq ${arch} linux {
-    lockfile:		/var/lock/mol-${session}
+    lockfile:		${var}/lock/mol-${session}
 } else {
     lockfile:		${var}/lock-${session}
 }
