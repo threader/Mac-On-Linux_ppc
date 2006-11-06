@@ -7,7 +7,7 @@ top-all:
 include		config/Makefile.top
 include		config/Makefile.master
 
-SUBDIRS		= . scripts src
+SUBDIRS		= . scripts src util/img
 MAKE		+= -s
 
 $(OINC)/cpu: $(OINC)/.dir
