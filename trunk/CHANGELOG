@@ -2,6 +2,7 @@ MOL Changelog
 
 mol-0.9.72_pre1
 2006-11-06 Joseph Jezak <josejx@gentoo.org>
+	* Added mol-img to default build
 	* Added mol-img for creating qcow and raw images
 	* Fixed qcow issues
 2006-10-28 Joseph Jezak <josejx@gentoo.org>
