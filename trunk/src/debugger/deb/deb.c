@@ -18,7 +18,7 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
-#include "poll.h"
+#include "poll_compat.h"
 #include <stddef.h>
 
 #include "deb.h"

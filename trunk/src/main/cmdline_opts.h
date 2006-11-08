@@ -15,7 +15,7 @@
  */
 
 #ifdef HAVE_GETOPT_H
-#include <getopt.h>
+#include <getopt_compat.h>
 #else
 struct option {
 	char	*optname;

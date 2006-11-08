@@ -16,7 +16,7 @@
 
 #include "mol_config.h"
 #include <sys/uio.h>
-#include "poll.h"
+#include "poll_compat.h"
 //#include "verbose.h"
 #include "os_interface.h"
 #include "osi_driver.h"

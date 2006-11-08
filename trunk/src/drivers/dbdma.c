@@ -1064,7 +1064,7 @@ dma_wait( int irq, int flags, struct timespec *abstimeout )
 
 	if( cond ){
 		ret.next = *ret_chain;
-		*ret_chain = ret.next;
+		*ret_chain = &ret;
 
 		if( abstimeout == NULL ){
 			pthread_cond_wait( cond, &ch->lock_mutex );

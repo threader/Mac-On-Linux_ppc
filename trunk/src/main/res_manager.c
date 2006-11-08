@@ -16,7 +16,7 @@
  */
 
 #include "mol_config.h"
-#include "obstack.h"
+#include "min_obstack.h"
 #include "debugger.h"
 #include "mol_assert.h"
 #include "res_manager.h"

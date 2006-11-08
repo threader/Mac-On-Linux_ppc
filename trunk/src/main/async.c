@@ -19,7 +19,7 @@
 #ifdef __linux__
 #include <linux/version.h>
 #endif
-#include "poll.h"
+#include "poll_compat.h"
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sched.h>

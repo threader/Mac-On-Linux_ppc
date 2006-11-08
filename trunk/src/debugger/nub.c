@@ -22,7 +22,7 @@
 #include <sys/param.h>
 #include <stdarg.h>
 
-#include "poll.h"
+#include "poll_compat.h"
 #include "debugger.h"
 #include "res_manager.h"
 #include "dgram.h"

@@ -72,7 +72,7 @@ mollib		:= $(top_odir)/lib
 molbin		:= $(top_odir)/lib/bin
 
 IDIRS		= -I. -I$(ARCHINCLUDES) -I./include -I$(srcdir)/shared \
-		  -I$(srcdir)/include $(INCLUDES) -I-
+		  -I$(srcdir)/include $(INCLUDES)
 all:
 
 RELNAME		:= $(shell $(scriptdir)/reldir)

@@ -16,7 +16,7 @@
 
 #include "mol_config.h"
 #include <sys/param.h>
-#include "poll.h"
+#include "poll_compat.h"
 
 #ifdef HAVE_POLL_H
 #error "This file should only be compiled if poll() is missing"

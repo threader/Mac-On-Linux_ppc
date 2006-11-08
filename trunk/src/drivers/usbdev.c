@@ -25,7 +25,7 @@
 #include <dirent.h>
 #include <linux/compiler.h>				/* linux/usbdevice_fs.h breaks otherwise */
 #include <linux/usbdevice_fs.h>
-#include "poll.h"
+#include "poll_compat.h"
 #include "async.h"
 #include "byteorder.h"
 #include "timer.h"

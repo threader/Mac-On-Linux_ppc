@@ -30,7 +30,7 @@
 #include "osi_driver.h"
 #include "pci.h"
 #include "async.h"
-#include "poll.h"
+#include "poll_compat.h"
 
 static struct {
 	int	irq;
