@@ -21,7 +21,7 @@
 
 #include "thread.h"
 #include "async.h"
-#include "poll.h"
+#include "poll_compat.h"
 #include "memory.h"
 #include "booter.h"
 #include "res_manager.h"

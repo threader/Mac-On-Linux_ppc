@@ -15,7 +15,7 @@
  */
 
 #include "mol_config.h"
-#include "obstack.h"
+#include "min_obstack.h"
 #include "mol_assert.h"
 #include <sys/param.h>
 

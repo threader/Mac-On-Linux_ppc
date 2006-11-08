@@ -19,7 +19,7 @@
 #include "mol_config.h"
 
 #include <sys/socket.h>
-#include <sys/poll.h>
+#include <sys/poll_compat.h>
 #include <sys/param.h>
 #include <sys/uio.h>
 #include <netinet/in.h>

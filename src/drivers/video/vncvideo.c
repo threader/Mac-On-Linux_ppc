@@ -69,7 +69,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#include "poll.h"
+#include "poll_compat.h"
 
 #include "verbose.h"
 #include "debugger.h"

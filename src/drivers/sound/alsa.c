@@ -21,7 +21,7 @@
 #include <alsa/mixer.h>
 #include <alsa/error.h>
 #include "booter.h"
-#include "poll.h"
+#include "poll_compat.h"
 #include "res_manager.h"
 #include "sound-iface.h"
 

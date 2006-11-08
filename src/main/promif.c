@@ -17,7 +17,7 @@
 #include "mol_config.h"
 #include <sys/param.h>
 #include <stdarg.h>
-#include "obstack.h"
+#include "min_obstack.h"
 
 #include "wrapper.h"
 #include "promif.h"

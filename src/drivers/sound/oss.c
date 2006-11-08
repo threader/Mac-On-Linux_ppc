@@ -18,7 +18,7 @@
 #include <sys/soundcard.h>
 #include "res_manager.h"
 #include "booter.h"
-#include "poll.h"
+#include "poll_compat.h"
 #include "sound-iface.h"
 
 struct { 

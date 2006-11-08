@@ -18,7 +18,7 @@
 #include <termios.h>
 #include "driver_mgr.h"
 #include "async.h"
-#include "poll.h"
+#include "poll_compat.h"
 #include "os_interface.h"
 #include "pic.h"
 #include "promif.h"

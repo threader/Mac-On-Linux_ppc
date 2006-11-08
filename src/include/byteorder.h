@@ -24,7 +24,7 @@
 #else
 #include <byteswap.h>
 #endif
-#include "cpu/byteorder.h"
+#include "cpu/mol_byteorder.h"
 
 #ifdef __powerpc__
 #if BYTE_ORDER == LITTLE_ENDIAN
