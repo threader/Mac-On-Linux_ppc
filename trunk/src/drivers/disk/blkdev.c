@@ -63,14 +63,15 @@ static opt_entry_t blk_opts[] = {
 
 enum { kMacVolumes, kLinuxDisks };
 
-#define kDiskTypeUnknown	1
-#define kDiskTypeHFSPlus	2
-#define kDiskTypeHFS		4
-#define kDiskTypeUFS		8
-#define kDiskTypePartitioned	16
-#define kDiskTypeRaw		32
-#define kDiskTypeQCow		64
-#define kDiskTypeDMG		128
+#define kDiskTypeUnknown	(1<<0);
+#define kDiskTypeHFSPlus	(1<<1);
+#define kDiskTypeHFS		(1<<2);
+#define kDiskTypeHFSX		(1<<3);
+#define kDiskTypeUFS		(1<<4);
+#define kDiskTypePartitioned	(1<<5);
+#define kDiskTypeRaw		(1<<6);
+#define kDiskTypeQCow		(1<<7);
+#define kDiskTypeDMG		(1<<8);
 
 
 static bdev_desc_t 		*s_all_disks;
@@ -146,6 +147,11 @@ inspect_disk( bdev_desc_t *bdev, char **typestr, char **volname, int type)
 	if( signature == HFS_PLUS_SIGNATURE ) {
 		*typestr = "Unembedded HFS+";
 		return kDiskTypeHFSPlus;
+	}
+
+	if( signature == HFSX_SIGNATURE ) {
+		*typestr = "HFSX";
+		return kDiskTypeHFSX;
 	}
 
 	if( signature == HFS_SIGNATURE ) {
@@ -247,7 +253,7 @@ open_mac_disk( char *name, int flags, int constructed )
 	if( ro_fallback )
 		flags &= ~BF_ENABLE_WRITE;
 
-	if( type & (kDiskTypeHFSPlus | kDiskTypeHFS | kDiskTypeUFS) ) {
+	if( type & (kDiskTypeHFSPlus | kDiskTypeHFSX | kDiskTypeHFS | kDiskTypeUFS) ) {
 		/* Standard Mac Volumes, nothing to do  */
 	} 
 	else if( type & kDiskTypePartitioned ) {
