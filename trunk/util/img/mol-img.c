@@ -150,6 +150,10 @@ int main(int argc, char **argv) {
 			else if (!strncmp(argv[args], "--help",6)) {
 				help();
 			}
+			/* Unknown option */
+			else if (!strncmp(argv[args], "--",2)) {
+				help();
+			}
 			/* Assume it's a filename */
 			else {
 				len = strlen(argv[args]);
