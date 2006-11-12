@@ -150,6 +150,18 @@ int main(int argc, char **argv) {
 			else if (!strncmp(argv[args], "--help",6)) {
 				help();
 			}
+			/* Assume it's a filename */
+			else {
+				len = strlen(argv[args]);
+				
+				if (len < 256) {
+					strncpy(file, argv[args], len);	
+				}
+				else {
+					printf("Invalid filename!\n");
+					exit(1);
+				}
+			}
 		}
 	}
 	else {
