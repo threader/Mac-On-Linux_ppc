@@ -2,6 +2,7 @@ MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
 2006-11-10 Joseph Jezak <josejx@gentoo.org>
+	* Fix mol-img bug
 	* Added support to recognize HFSX disks
 2006-11-08 Joseph Jezak <josejx@gentoo.org>
 	* Added bootx source to main MOL build (with backports from newer BootX)
