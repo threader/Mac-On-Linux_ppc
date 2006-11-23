@@ -45,7 +45,7 @@ static char *file_res_names[ NUM_KEYCODE_TABLES ] = {
 	"vnckbd_prefs"
 };
 
-#define UNK		126
+#define UNK		0xff
 
 /* 127 == Start Button */
 static const unsigned char linux_to_adb_keycodes[128] = {
