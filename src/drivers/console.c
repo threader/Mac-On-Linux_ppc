@@ -29,6 +29,7 @@
 #include <termios.h>
 #include <linux/vt.h>          
 #include <linux/kd.h>
+#include <linux/input.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -124,6 +125,16 @@ console_key_event( int fd, int dummy_events )
 	n = read( fd, events, sizeof(events)-4 );
 
 	for( i=0; i<n; i++ ) {
+		if( uses_linux_keycodes() && (events[i] & 0x7f) == 0x00 /* extended */ ) {
+			while( i+3 > n ) {
+				if( (nn=read(fd, events+n, i+3-n )) <= 0 )
+					break;
+				n += nn;
+			}
+			key_event( kConsoleKeytable, CONSOLE_RAW_KEYCODE | ((events[i+1]&0x7f)<<7) | (events[i+2]&0x7f), !(events[i] & 0x80) );
+			i+=2;
+			continue;
+		}
 		if( !uses_linux_keycodes() && (events[i] & 0x7f) == 0x7e /* mouse */ ) {
 			while( i+3 > n ) {
 				if( (nn=read(fd, events+n, i+3-n )) <= 0 )
@@ -212,7 +223,7 @@ keyboard_init( void )
 	kbd.handler_id = add_async_handler( vt.fd, POLLIN, console_key_event, 1 /* use SIGIO */ );
 	kbd.initialized = 1;
 
-	register_key_table( kConsoleKeytable, 0, 127 );
+	register_key_table( kConsoleKeytable, 0, KEY_MAX );
 	user_kbd_customize( kConsoleKeytable );
 
 	set_text_kbd();
