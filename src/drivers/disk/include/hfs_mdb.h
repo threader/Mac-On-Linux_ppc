@@ -76,7 +76,7 @@ typedef struct hfs_mdb {
 
 #define HFS_PLUS_SIGNATURE	0x482b		/* 'H+' */
 #define HFS_SIGNATURE		0x4244		/* HFS / embedded HFS+ */
-
+#define HFSX_SIGNATURE		0x4858		/* 'HX' */
 
 typedef struct hfs_plus_mdb
 {
