@@ -63,15 +63,15 @@ static opt_entry_t blk_opts[] = {
 
 enum { kMacVolumes, kLinuxDisks };
 
-#define kDiskTypeUnknown	(1<<0);
-#define kDiskTypeHFSPlus	(1<<1);
-#define kDiskTypeHFS		(1<<2);
-#define kDiskTypeHFSX		(1<<3);
-#define kDiskTypeUFS		(1<<4);
-#define kDiskTypePartitioned	(1<<5);
-#define kDiskTypeRaw		(1<<6);
-#define kDiskTypeQCow		(1<<7);
-#define kDiskTypeDMG		(1<<8);
+#define kDiskTypeUnknown	(1<<0)
+#define kDiskTypeHFSPlus	(1<<1)
+#define kDiskTypeHFS		(1<<2)
+#define kDiskTypeHFSX		(1<<3)
+#define kDiskTypeUFS		(1<<4)
+#define kDiskTypePartitioned	(1<<5)
+#define kDiskTypeRaw		(1<<6)
+#define kDiskTypeQCow		(1<<7)
+#define kDiskTypeDMG		(1<<8)
 
 
 static bdev_desc_t 		*s_all_disks;
@@ -123,7 +123,7 @@ inspect_disk( bdev_desc_t *bdev, char **typestr, char **volname, int type)
 	*typestr = "Disk";
 	*volname = NULL;	
 
-	if(type == kDiskTypeUnknown) {
+	if (type == kDiskTypeUnknown) {
 		*volname = strdup("- Unknown -");
 		return kDiskTypeUnknown;
 	}
