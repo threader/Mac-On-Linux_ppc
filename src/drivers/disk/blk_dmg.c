@@ -218,9 +218,9 @@ static inline int dmg_read_chunk(BDRVDMGState *s, int sector_num)
 	    if (ret != s->lengths[chunk])
 		return -1;
 	
-	    s->zstream.next_in = s->compressed_chunk;
+	    s->zstream.next_in = (unsigned char *) (s->compressed_chunk);
 	    s->zstream.avail_in = s->lengths[chunk];
-	    s->zstream.next_out = s->uncompressed_chunk;
+	    s->zstream.next_out = (unsigned char *) (s->uncompressed_chunk);
 	    s->zstream.avail_out = 512*s->sectorcounts[chunk];
 	    ret = inflateReset(&s->zstream);
 	    if(ret != Z_OK)
