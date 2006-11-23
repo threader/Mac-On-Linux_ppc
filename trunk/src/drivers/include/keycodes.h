@@ -46,6 +46,7 @@ extern void	add_key_actions( key_action_t *, int size );
 extern void	remove_key_actions( key_action_t *, int size );
 
 /* Some ADB keycodes used by mol */
+/*
 #define KEY_F1			0x7a
 #define KEY_F2			0x78
 #define KEY_F3			0x63
@@ -60,11 +61,12 @@ extern void	remove_key_actions( key_action_t *, int size );
 #define KEY_F12			0x6f
 
 #define KEY_TAB			0x30
-#define KEY_SPACE		0x31	/* FIXME */
-#define KEY_RETURN		0x24
+#define KEY_SPACE		0x31	
 #define KEY_ENTER		0x4c
 #define KEY_CAPSLOCK		0x39
+*/
 
+#define KEY_RETURN		0x24
 #define KEY_CTRL		0x36
 #define KEY_SHIFT		0x38
 #define KEY_ALT			0x3a
