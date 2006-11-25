@@ -15,6 +15,6 @@ CONFIG_PCIPROXY=y
 #
 # Network drivers
 #
-CONFIG_TUN=y
+CONFIG_TUN=n
 CONFIG_TAP=n
 CONFIG_SHEEP=y
