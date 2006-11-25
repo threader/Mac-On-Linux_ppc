@@ -5,18 +5,19 @@ config TUN
 	bool "Tun driver"
 	default y
 	help
-	  Build the tun/tap kernel module (recommended)
+	  Build the tun/tap kernel module 
+	  2.4 kernels only, 2.6 kernels please use the kernel version instead
 
 config TAP
 	bool "Ethertap driver"
 	default y
 	help
-	  Build the ethertap kernel module (obsolete)
+	  Build the ethertap kernel module (obsolete - do not use)
 
 config SHEEP
 	bool "Sheep net driver"
 	default y
 	help
-	  Build the sheep-net kernel module
+	  Build the sheep-net kernel module (Required for MacOS)
 
 endmenu
