@@ -1,6 +1,12 @@
 MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
+2006-11-24 Joseph Jezak <josejx@gentoo.org>
+	* Cleaned up a bunch of gcc4 issues
+	* Removed TUN from defconfig
+	* Updated network driver help info
+	* Integrated patch from Marcus Comstedt for USB mice
+	* Removed linux/compiler.h from USB to fix Ubuntu issue
 2006-11-10 Joseph Jezak <josejx@gentoo.org>
 	* Fix mol-img bug
 	* Added support to recognize HFSX disks
