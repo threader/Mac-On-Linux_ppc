@@ -23,7 +23,7 @@
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <dirent.h>
-#include <linux/compiler.h>				/* linux/usbdevice_fs.h breaks otherwise */
+// #include <linux/compiler.h>	/* linux/usbdevice_fs.h breaks otherwise */
 #include <linux/usbdevice_fs.h>
 #include "poll_compat.h"
 #include "async.h"
