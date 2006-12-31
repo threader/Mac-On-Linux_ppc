@@ -34,8 +34,7 @@ extern mol_phandle_t	FindDevice( char *path );
 /* File Interface */
 extern int		Open( char *path );
 extern void		Close( int ihandle );
-extern void		Read( int ihandle, long addr, long length );
-extern void		Write( int ihandle, long addr, long length );
+extern void		Read( int ihandle, char * addr, long length );
 extern void		Seek( int ihandle, long long position );
 
 extern int		IsCD( int ihandle );

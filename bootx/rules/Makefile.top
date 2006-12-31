@@ -10,7 +10,7 @@ VENDOR		:=
 #################################################################
 
 VERSION		:= 0.9.72
-EXTRA_VERSION	:= -pre1$(VENDOR)
+EXTRA_VERSION	:= -pre2$(VENDOR)
 RELEASENAME	:= $(VERSION)$(EXTRA_VERSION)$(VENDOR)
 
 top_srcdir	:= $(shell \

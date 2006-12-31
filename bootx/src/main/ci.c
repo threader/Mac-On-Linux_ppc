@@ -343,19 +343,19 @@ find_partition_offs( int ih, int parnum )
 	
 	memset( &dmap, 0, sizeof(dmap) );
 	Seek( ih, 0 );
-	Read( ih, (long)&dmap, sizeof(dmap) );
+	Read( ih, (char *) &dmap, sizeof(dmap) );
 
 	if( dmap.sbSig != DESC_MAP_SIGNATURE )
 		return -1;
 
 	Seek( ih, dmap.sbBlockSize );
-	Read( ih, (long)&par, sizeof(part_entry_t) );
+	Read( ih, (char *) &par, sizeof(part_entry_t) );
 
 	if( parnum > par.pmMapBlkCnt || par.pmSig != 0x504d /* 'PM' */ )
 		return -1;
 
 	Seek( ih, ((long long)dmap.sbBlockSize) * parnum );
-	Read( ih, (long)&par, sizeof(part_entry_t) );
+	Read( ih, (char *) &par, sizeof(part_entry_t) );
 
 	if( par.pmSig != 0x504d /* 'PM' */ )
 		return -1;
@@ -446,7 +446,7 @@ Close( int ih )
 }
 
 void
-Read( int ih, long addr, long length )
+Read( int ih, char * addr, long length )
 {
 	vol_desc_t *v = &fds[ih];
 	long long pos;
@@ -454,12 +454,29 @@ Read( int ih, long addr, long length )
 	if( ih < 0 || ih >= MAX_NUM_FDS || !fds[ih].in_use )
 		return;
 	pos = v->seek_pos + v->par_offs;
-
+	
 	if( pos & 511 ) {
 		printm("SyncRead: Bad alignment\n");
 		return;
 	}
-	(*v->ops->read)( v, pos/512, (char*)addr, length );
+
+	/* Handle non-512 byte aligned reads
+	 * Added because the compressed disks expect 512 byte chunks */
+	if(length & 511) {
+		char buf[512];
+		int sectors = length / 512;
+
+		/* Read all of the normal 512 byte chunks */
+		if (sectors > 0)
+			(*v->ops->read)(v, pos / 512, addr, sectors * 512);
+
+		/* Read the partial sector and copy only the valid part */
+		(*v->ops->read)(v, (pos / 512) + sectors, buf, 512);
+		memcpy(addr + sectors * 512, buf, length - (sectors * 512));
+	}
+	else {
+		(*v->ops->read)( v, pos / 512, addr, length );
+	}
 
 //	v->seek_pos += length;
 }

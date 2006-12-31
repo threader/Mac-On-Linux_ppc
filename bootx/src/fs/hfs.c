@@ -99,7 +99,7 @@ long HFSInitPartition(CICell ih)
   
   // Look for the HFS MDB
   Seek(ih, kMDBBaseOffset);
-  Read(ih, (long)gHFSMdbVib, kBlockSize);
+  Read(ih, (char *)gHFSMdbVib, kBlockSize);
   
   if (gHFSMDB->drSigWord == kHFSSigWord) {
     gAllocationOffset = gHFSMDB->drAlBlSt * kBlockSize;
@@ -131,7 +131,7 @@ long HFSInitPartition(CICell ih)
   
   // Look for the HFSPlus Header
   Seek(ih, gAllocationOffset + kMDBBaseOffset);
-  Read(ih, (long)gHFSPlusHeader, kBlockSize);
+  Read(ih, (char *)gHFSPlusHeader, kBlockSize);
   
   // Not a HFS[+] volume.
   if (gHFSPlus->signature != kHFSPlusSigWord) return -1;

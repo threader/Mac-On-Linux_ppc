@@ -1,6 +1,10 @@
 MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
+2006-12-29 Joseph Jezak <josejx@gentoo.org>
+	* Changed BootX Read to pass addresses instead of casting them as long
+	* Fixed BootX read size bug preventing booting on QCOW/DMG
+	* Made BootX compile look like MOL compile
 2006-11-24 Joseph Jezak <josejx@gentoo.org>
 	* Cleaned up a bunch of gcc4 issues
 	* Removed TUN from defconfig

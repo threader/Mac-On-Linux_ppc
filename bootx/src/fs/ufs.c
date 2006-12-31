@@ -84,14 +84,14 @@ long UFSInitPartition(CICell ih)
   
   // Look for the Super Block
   Seek(ih, gPartitionBase + SBOFF);
-  Read(ih, (long)gFSBuf, SBSIZE);
+  Read(ih, (char *)gFSBuf, SBSIZE);
   
   gFS = (struct fs *)gFSBuf;
   if (gFS->fs_magic != FS_MAGIC) {
     // Did not find it... Look for the Disk Label.
     // Look for the Disk Label
     Seek(ih, 1ULL * kDevBlockSize * kDiskLableBlock);
-    Read(ih, (long)gDLBuf, 8192);
+    Read(ih, (char *)gDLBuf, 8192);
     
     dl = (disk_label_t *)gDLBuf;
 
@@ -107,7 +107,7 @@ long UFSInitPartition(CICell ih)
     
     // Re-read the Super Block.
     Seek(ih, gPartitionBase + SBOFF);
-    Read(ih, (long)gFSBuf, SBSIZE);
+    Read(ih, (char *)gFSBuf, SBSIZE);
     
     gFS = (struct fs *)gFSBuf;
     if (gFS->fs_magic != FS_MAGIC) {
