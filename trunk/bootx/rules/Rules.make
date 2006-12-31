@@ -9,6 +9,11 @@
 #   version 2
 
 
+CYELLOW		:= `test "$$TERM" != "dumb" && echo "\33[0;33m"`
+CYELLOWB	:= `test "$$TERM" != "dumb" && echo "\33[1;33m"`
+CBOLD		:= `test "$$TERM" != "dumb" && echo "\33[1;23m"`
+CNORMAL		:= `test "$$TERM" != "dumb" && echo "\33[0;39m"`
+
 #################################################################
 # recursion
 #################################################################
@@ -58,8 +63,10 @@ $(call SUBDEP,13)
 $(call SUBDEP,14)
 
 $(_SUBTARGETS) : % :
+	@printf "$(CBOLD)"
 	@echo + "`echo $@ | sed -e s/.*all/Entering/ -e s/.*clean/cleaning/`" \
 		"$(word 2,$(subst -, ,$@))"
+	@printf "$(CNORMAL)"
 	@$(MAKE) --no-print-directory -C $(word 2,$(subst -, ,$@)) $(word 3,$(subst -, ,$@))
 
 all-subs: $(call SUBTARG,$(words $(VSUBS)))
@@ -78,20 +85,18 @@ DEPFILES	:= .deps/dummy $(wildcard .deps/*.P)
 TARGETDIR	= $(dir $1)
 
 $(ODIR)/%.o: %.c Makefile
-	@printf "    Compiling %-20s: " $(notdir $@)
+	@printf "    $(CYELLOW)Compiling    %-20s$(CNORMAL)\n" $(notdir $@)
 	compiling=
 	@$(INSTALL) -d $(dir $@)
 	$(COMPILE) $(DEPFLAGS) -c $< -o $@
 	@$(DEPEXTRA)
-	@echo "ok"
 
 $(ODIR)/%.o: %.cpp Makefile
-	@printf "    Compiling %-20s: " $(notdir $@)
+	@printf "    $(CYELLOW)Compiling    %-20s$(CNORMAL)\n" $(notdir $@)
 	cc_compiling=
 	@$(INSTALL) -d $(dir $@)
 	$(CXXCOMPILE) $(DEPFLAGS) -c $< -o $@
 	@$(DEPEXTRA)
-	@echo "ok"
 
 clean-deps:
 	@$(RM) -rf .deps
@@ -117,12 +122,11 @@ $(word 4,$(PROGS)):	$(call PROGDEP,4)
 all-local: $(PROGS)
 
 $(NPROGS) : % : Makefile
-	@printf "= Building %-22s : " $(notdir $@)
+	@printf "$(CBOLD)= Building %-22s$(CNORMAL)\n" $(notdir $@)
 	linking=
 	$(CC) -o $@ $(LDFLAGS) $(call _PROG,$@,LDFLAGS) $(call PROG,$@,OBJS) \
 	  $(call _PROG,$@,LDADD) $(LDADD) $(call _PROG,$@,LIBS) $(LIBS)
 	@$(call _PROG,$@,POST)
-	@echo "ok"
 	@TARGET=$(call _PROG,$@,TARGET) ; test $$TARGET && { \
 		test -d $$TARGET || $(INSTALL) -d `dirname $$TARGET` ; \
 		$(RM) -f $$TARGET ; \
@@ -153,6 +157,7 @@ $(ODIR)/.dummy:
 	@touch $(ODIR)/.dummy
 
 $(TLIBS) : % : Makefile $(ODIR)/.dummy
+	@printf "    $(CYELLOWB)Linking      %-22s$(CNORMAL)\n" $(notdir $@)
 	@test -d $(ODIR) || mkdir $(ODIR)
 	@rm -f $@_
 	ar cru $@_ $(filter %.o,$(call TLIB,$@,OBJS)) $(ODIR)/.dummy
@@ -192,7 +197,7 @@ ASFILTER	= $(shell if test -x $(FILTERBIN) ; then echo $(FILTERBIN) \
 INVOKE_M4	= | $(M4) -s $(M4_NO_GNU) | $(ASFILTER)
 
 $(ODIR)/%.o: %.S Makefile
-	@printf "    Compiling %-20s: " $(notdir $@)
+	@printf "    $(CYELLOW)Compiling    %-20s$(CNORMAL)\n" $(notdir $@)
 	assembly=
 	@$(INSTALL) -d $(dir $@)
 	@$(RM) $@ $@.s
@@ -201,8 +206,6 @@ $(ODIR)/%.o: %.S Makefile
 	$(AS) $(IDIRS) $@.s $(ASFLAGS) -o $@
 	@$(DEPEXTRA)
 	@$(RM) $@.s
-	@echo "ok"
-
 
 #################################################################
 # targets

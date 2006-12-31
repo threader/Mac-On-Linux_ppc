@@ -75,7 +75,7 @@ long Ext2InitPartition(CICell ih)
   
   // Read for the Super Block.
   Seek(ih, SBOFF);
-  Read(ih, (long)gFSBuf, SBSIZE);
+  Read(ih, (char *)gFSBuf, SBSIZE);
   
   gFS = (struct m_ext2fs *)gFSBuf;
   e2fs_sb_bswap(&gFS->e2fs, &gFS->e2fs);

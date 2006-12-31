@@ -103,7 +103,7 @@ long CacheRead(CICell ih, char *buffer, long long offset,
   
   // Read the data from the disk.
   Seek(ih, offset);
-  Read(ih, (CICell)buffer, length);
+  Read(ih, (char *)buffer, length);
   if (cache) gCacheMisses++;
   
   // Put the data from the disk in the cache if needed.
