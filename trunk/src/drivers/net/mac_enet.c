@@ -477,7 +477,7 @@ mac_enet_init( void )
 		memset( is, 0, sizeof(*is) );		
 
 		if( find_packet_driver(i, &is->iface) )
-			continue;
+			break;
 		add_netdev( is );
 	}
 	if( !numifs )
