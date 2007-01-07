@@ -59,7 +59,6 @@ int dmg_open(int fd, bdev_desc_t *bdev)
     CLEAR(*s);
 
     off_t info_begin,info_end,last_in_offset,last_out_offset;
-    printm("Opening DMG disk ");
 
     /* Init the bdev struct */
     bdev->fd = fd;
@@ -152,11 +151,9 @@ int dmg_open(int fd, bdev_desc_t *bdev)
 
     s->current_chunk = s->n_chunks;
     
-    printm("ok!\n");
     return 0;
 
 fail:
-    printm("failed!\n");
     return -1;
     
 }

@@ -86,22 +86,30 @@ find_disk_type(int fd, char *name, bdev_desc_t *bdev)
 {
 	char buf[512];
 
-	if ( pread(fd, buf, 512, 0) != 512 )
+	/* If we can't read 512 bytes, give up */
+	if ( pread(fd, buf, 512, 0) != 512 ) 
 		return kDiskTypeUnknown;
+
+	/* Force handling driver disks as RAW disks */
+	if (!strncmp(name, "images/moldisk.dmg", 18) ||
+	    !strncmp(name, "images/moldiskX.dmg", 19)) {
+	    	raw_open(fd, bdev);
+		return kDiskTypeRaw;
+	}
 	
+	/* Check for QCow Disks */
 	if ( QCOW_MAGIC == be32_to_cpu(((QCowHeader *)buf)->magic) ) {
 		qcow_open(fd, bdev);
 		return kDiskTypeQCow;
 	}
 
 	/* Check for dmg disks */
-	if (strlen(name) > 4 && !strncmp(name + strlen(name) - 4, ".dmg", 4) &&
-		((desc_map_t *)buf)->sbSig != DESC_MAP_SIGNATURE ) {
+	if (strlen(name) > 4 && !strncmp(name + strlen(name) - 4, ".dmg", 4)) {
 		dmg_open(fd, bdev);
 		return kDiskTypeDMG;		
 	}
 
-	/* Otherwise it's a raw disk */
+	/* Otherwise, guess it's a raw disk */
 	raw_open(fd, bdev);	
 	return kDiskTypeRaw;
 }
@@ -206,6 +214,10 @@ register_disk(bdev_desc_t *bdev, const char *typestr, const char *name,
 	if(NULL == bdev) {
 		bdev = malloc( sizeof(bdev_desc_t) );
 		CLEAR( *bdev );
+		/* If bdev isn't allocated already, these won't get set */
+		bdev->read = &raw_read;
+		bdev->write = &raw_write;
+		bdev->seek = &raw_seek;
 	}
 
 	bdev->dev_name = strdup(name);
