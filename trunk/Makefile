@@ -44,9 +44,6 @@ help:
 	@printf "  %-30s - %s\n" "make uninstall" "uninstall MOL"
 	@printf "  %-30s - %s\n" "make uninstall-all" "uninstall everything (including config files)"
 	@printf "  %-30s - %s\n" "make paths" "show install paths"
-	@printf "\nBITKEEPER/RSYNC support:\n"
-	@printf "  %-30s - %s\n" "make libimport" "download binary support files"
-	@printf "  %-30s - %s\n" "make libpopulate" "use binary suport files in ./libimport"
 	@printf "\nDISTRIBUTION:\n"
 	@printf "  %-30s - %s\n" "make dist" "create tar archive"
 	@printf "  %-30s - %s\n" "make rpms" "build all RPMs"
@@ -55,21 +52,6 @@ help:
 	@echo
 
 #####################################################################
-
-libimport:
-	scripts/libimport import
-libpopulate:
-	scripts/libimport populate
-libimport_dist:
-	scripts/libimport import_dist
-libdelete:
-	scripts/libimport delete
-libexport: clean
-	scripts/libimport export
-libimport_clean:
-	$(RM) -rf libimport
-
-.PHONY: libimport libpopulate libimport_dist libdelete libexport libimport_clean
 
 
 #####################################################################

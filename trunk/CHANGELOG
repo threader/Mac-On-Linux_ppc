@@ -2,6 +2,8 @@ MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
 2007-01-08 Joseph Jezak <josejx@gentoo.org>
+	* Some docs cleanups, changed the website address
+	* Removed libimport script
 	* Fixed another MacOS segfault on startup
 	* Ensured that all read/write/seek disk pointers are set properly
 2007-01-06 Joseph Jezak <josejx@gentoo.org>

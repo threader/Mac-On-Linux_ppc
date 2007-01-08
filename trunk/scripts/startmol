@@ -121,7 +121,7 @@ done
 	    "      --libdir=dir    set the MOL library directory\n"\
 	    "      --zapnvram      clear NVRAM\n"\
 	    "      --noautoboot    enter Open Firmware (if OF is used)\n"\
-	    "\nFor more information, please visit <http://www.maconlinux.org>.\n"
+	    "\nFor more information, please visit <http://mac-on-linux.sourceforge.net>.\n"
     exit 1;
 }
 

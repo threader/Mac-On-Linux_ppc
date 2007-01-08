@@ -74,9 +74,10 @@ function get_mod_name () {
 	_MOD_DIR=`_mol_uname -f` || {
 	    echo "===================================================================="
 	    echo "  No kernel module suitable for this kernel was found. The MOL"
-	    echo "  kernel modules must be recompiled (refer to www.maconlinux.org"
-	    echo "  for instructions). The command 'startmol --list' can be used"
-	    echo "  to display installed kernel modules."
+	    echo "  kernel modules must be recompiled (refer to:"
+	    echo "  http://mac-on-linux.sourceforge.net for instructions)."
+	    echo "  The command 'startmol --list' can be used to display installed"
+	    echo "  kernel modules."
 	    echo "===================================================================="
 	    return 1;
 	} 1>&2

@@ -99,9 +99,6 @@ more local).
 util/		debugging utilities (mostly obsolete stuff)
 scripts/	build helpers
 mollib/		config and binary support files
-libimport/	'make libimport' cache (the contents
-		of this directory is automatically integrated
-		into mollib/)
 
 The following mollib/ files are of particular interest:
 
