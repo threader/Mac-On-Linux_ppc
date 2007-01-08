@@ -280,6 +280,24 @@ test "$enable_png" != no && {
 AC_SUBST(HAVE_PNG)
 AC_SUBST(LIB_PNG)
 
+################################################################################
+# Check for -fno-stack-protector availability
+################################################################################
+
+AC_MSG_CHECKING(for -fno-stack-protector support)
+SAVED_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -fno-stack-protector"
+AC_TRY_COMPILE([],[], [ac_cv_no_stack_protect=yes], [ac_cv_no_stack_protect=no])
+test "$ac_cv_no_stack_protect" = "yes" && {
+    NOSTACKPROTECT="-fno-stack-protector"
+    AC_MSG_RESULT(yes)
+}
+test "$ac_cv_no_stack_protect" = "no" && {
+    NOSTACKPROTECT=""
+    AC_MSG_RESULT(no)
+}
+CFLAGS="$SAVED_CFLAGS"
+AC_SUBST(NOSTACKPROTECT)
 
 ################################################################################
 # CFLAGS and other stuff

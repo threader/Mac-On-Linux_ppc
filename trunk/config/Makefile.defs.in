@@ -11,6 +11,7 @@
 
 LN_S		= @LN_S@
 CFLAGS		= @CFLAGS@
+NOSTACKPROTECT	= @NOSTACKPROTECT@
 WFLAGS		= -Wall -Wmissing-prototypes
 CC		= @CC@
 LD		= @LD@

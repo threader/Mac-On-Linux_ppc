@@ -114,7 +114,6 @@ install: install-modules
 	@$(INSTALL_DATA) $(molshare)/syms/of_words	$(_datadir)/syms/
 	@$(INSTALL_DATA) $(molshare)/nvram/nvram.dist	$(_datadir)/nvram/
 	@$(INSTALL_DATA) $(molshare)/nvram/nvram.dist	$(_vardir)/nvram.nw
-	@$(INSTALL_DATA) $(molshare)/nvram/nvram.x	$(_vardir)/nvram.x
 	@$(MAKE) -C Doc install
 	chmod u+s $(_libdir)/bin/mol
 
