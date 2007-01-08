@@ -234,14 +234,7 @@ dump_dbdma_cmd( ulong mphys )
 {
 	struct dbdma_cmd *cp = (struct dbdma_cmd*)transl_ro_mphys( mphys );
 	short cmd;
-
-	union {
-		unsigned int * p;	/* Physical data address */
-		ulong * l;
-	} addr_convert;
-
-	ulong * phy_addr;
-
+	
 	if( !cp ) {
 		printm("dbdma: bad access\n");
 		return;
@@ -254,15 +247,9 @@ dump_dbdma_cmd( ulong mphys )
 	       key_names[(cmd>>8)&0x7] );
 	printm("I:%02X  BR:%02X  W:%02X\n", (cmd & 0x30)>>4, 
 	       (cmd&0xc)>>2, (cmd&0x3) );
-
-
-	addr_convert.p = &cp->phy_addr;
-	phy_addr = addr_convert.l;
-	addr_convert.p = &cp->cmd_dep;
-	
 	printm("req_count: %04X   phy_addr: %08X   cmd_dep: %08X\n", 
-	       ld_le16( &cp->req_count ), ld_le32( phy_addr ), 
-	       ld_le32( addr_convert.l ) );
+	       ld_le16( &cp->req_count ), ld_le32( (ulong*)&cp->phy_addr), 
+	       ld_le32( (ulong*)&cp->cmd_dep ) );
 	printm("res_count: %04X   xfer_status: %04X\n",
 	       ld_le16( &cp->res_count ), ld_le16( &cp->xfer_status ));
 }
@@ -450,17 +437,11 @@ prepare_cmd( struct dbdma_channel *ch )
 {
 	ulong 	cp_phys;
 	int 	s;
-
-	union {
-		struct dbdma_cmd * d;
-		char * c;
-	} cur_cmd;
 	
 	cp_phys = ld_le32( &ch->reg[r_cmdptr]);
 	
 	/* check that the address is valid (in RAM/ROM) */
-	cur_cmd.d = ch->cur_cmd;
-	s = mphys_to_lvptr( cp_phys, (char **) cur_cmd.c );
+	s = mphys_to_lvptr( cp_phys, (char**)&ch->cur_cmd );
 	
 	ch->cur_cmd_in_rom = 0;
 	if( s<0 ) {
@@ -516,11 +497,6 @@ start_cmd( struct dbdma_channel *ch )
 	int	key;
 	ulong	addr;
 	int	req_count;
-	
-	union {
-		unsigned int * p;	/* Physical data address */
-		ulong * l;
-	} addr_convert;
 
 #ifdef DEBUG_DMA
 	printm("\n");
@@ -546,8 +522,7 @@ start_cmd( struct dbdma_channel *ch )
 		ch->may_branch = 1;
 
 		req_count = ld_le16( &cp->req_count );
-		addr_convert.p = &(cp->phy_addr);
-		addr = ld_le32( addr_convert.l );
+		addr = ld_le32( (ulong*)&cp->phy_addr );
 		
 		if( key == 0x400 ) {
 			printm("DBDMA: Reserved KEY 0x400\n");
@@ -572,8 +547,7 @@ start_cmd( struct dbdma_channel *ch )
 				VPRINT("DBDMA [%d]: Illegal key type %d\n", ch->irq, key );
 			key = KEY_SYSTEM;
 		}
-		addr_convert.p = &(cp->phy_addr);
-		addr = ld_le32( addr_convert.l );
+		addr = ld_le32( (ulong*)&cp->phy_addr );
 		req_count = ld_le16( &cp->req_count ) & 0x7;
 
 		/* endian stuff */
@@ -1030,11 +1004,9 @@ int
 dma_wait( int irq, int flags, struct timespec *abstimeout )
 {
 	struct dbdma_channel *ch = ch_table[irq];
-	struct ret_container ret, **ret_chain = NULL;
+	struct ret_container *ret, **ret_chain = NULL;
 	pthread_cond_t *cond = NULL;
 	int retval = DMA_ERROR;
-
-	ret.ret = 0;
 
 	LOCK( ch );
 	if( (flags & DMA_RW) == DMA_RW ) {
@@ -1062,24 +1034,25 @@ dma_wait( int irq, int flags, struct timespec *abstimeout )
 		}
 	}
 
+	/* If we're not ready to do DMA, the condition is set */
 	if( cond ){
-		ret.next = *ret_chain;
-		*ret_chain = &ret;
+		ret = *ret_chain;
+		*ret_chain = ret->next;
 
 		if( abstimeout == NULL ){
 			pthread_cond_wait( cond, &ch->lock_mutex );
-			retval = ret.ret;
+			retval = ret->ret;
 		} else {
 			int err;
 			for( ;; ){
 				err = pthread_cond_timedwait( cond, &ch->lock_mutex, abstimeout );
 				if( !err ) {
-					retval = ret.ret;
+					retval = ret->ret;
 					break;
 				}
 				if( err == EINTR ) {
 					/* we must unchain ourselves if it timed out - not otherwise */
-					for( ; *ret_chain != ret.next && *ret_chain ; *ret_chain = (*ret_chain)->next )
+					for( ; *ret_chain != ret && *ret_chain ; *ret_chain = (*ret_chain)->next )
 						;
 					if( *ret_chain )
 						*ret_chain = (*ret_chain)->next;
