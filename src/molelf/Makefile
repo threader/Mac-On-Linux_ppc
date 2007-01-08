@@ -18,7 +18,7 @@ xkeyremap-OBJS		= keyremap.o vsprintf.o
 
 LINKCMD-$(LINUX)	= $(LD) -Ttext=0x101000 -Bstatic $^ -o $@
 LINKCMD-$(OSX)		= $(LD) -e __start -static $^ -o $@
-CFLAGS			+= -static
+CFLAGS			+= -static $(NOSTACKPROTECT)
 
 $(ODIR)/selftest: $(ODIR)/init.o $(ODIR)/libxselftest.a
 	$(LINKCMD-y)

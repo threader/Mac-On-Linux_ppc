@@ -2,6 +2,9 @@ MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
 2007-01-08 Joseph Jezak <josejx@gentoo.org>
+	* Removed Sheep from defconfig
+	* Fixed Ubuntu -fno-stack-protector bug
+	* Removed nvram.x, fix doesn't really work
 	* Some docs cleanups, changed the website address
 	* Removed libimport script
 	* Fixed another MacOS segfault on startup
