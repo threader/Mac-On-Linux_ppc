@@ -5,16 +5,7 @@
 distdir		= mol-$(VERSION)
 TARNAME		= mol-$(VERSION).tgz
 
-bincheck:
-	@[ ! -f mollib/drivers/video.nw ] && { \
-		echo "==================================================" 	; \
-		echo "  This tree does not contain the binary support"		; \
-		echo "  files. Do 'make libimport' to download them." 		; \
-		echo "==================================================" 	; \
-		exit 1 ; \
-	} ; true
-
-dist-local: bincheck
+dist-local: 
 	@$(RM) -r $(distdir)
 	@echo "Populating $(distdir)"
 	@for x in * ; do \
@@ -73,7 +64,7 @@ COND_SYMLINKS		:= moldeb
 install-config:
 	@$(MAKE) -C Doc install-config-force	
 
-install: bincheck install-modules
+install: install-modules
 	@$(INSTALL_DIR) -v $(_bindir) $(_datadir) $(_etcdir) $(_vardir)
 	@$(INSTALL_DIR) -v $(_docdir) $(_libdir) $(_libdir)/bin/
 	@$(INSTALL_DIR) -v $(addprefix $(_datadir)/, images nvram drivers oftrees)

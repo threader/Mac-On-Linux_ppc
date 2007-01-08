@@ -1,18 +1,21 @@
 ================================================================
-  Compilation Instructions (January 12, 2004)
+  Compilation Instructions
 ================================================================
 
-various install options; Before the compilation, a configuration menu will appear.
+Configuration
+=============
+
 	Before the compilation, a configuration menu will appears allowing
 	MOL configuration settings to be tweaked. It is possible to return to
 	this menu later by issuing the command 'make menuconfig'.
 
 
-Building MOL from the source tar ball:
+Building MOL from the source tarball:
 ======================================
 
 	This is very simple just do
 
+		bash$ ./autogen.sh
 		bash$ make		
 		bash$ make install	(as root)
 
@@ -22,41 +25,16 @@ menu later by issuing 'make menuconfig'.  The 'make defconfig' command
 sets the default configuration.
 
 
-
-Building MOL from the rsync tree:
-=================================
-
-		bash$ ./autogen.sh
-		bash$ make
-		bash$ make libimport
-		bash$ make install	(as root)
-
-	The libimport step will download certain binary support files which
-	are not included in the source tree (which only contains pure source).
-	You only need to do this step once...
-
-
-Building MOL from the BitKeeper repository:
-===========================================
-
-	From the BitKeeper repository:
-
-		bash$ bk -r co
-		bash$ ./autogen.sh
-		bash$ make
-		bash$ make libimport
-		bash$ make install	(as root)
-
-
 The kernel source
 =================
 
 	MOL uses a couple of kernel modules (the core MOL engine and networking
-	related modules). It is very important that kernel modules are compiled using
-	the correct kernel headers. Kernel modules should *always* be compiled using
-	the same headers as was used to build the kernel. If headers from a different
-	kernel version is used (or even from a different kernel configuration), then the
-	result will probably not be a usable kernel module.
+	related modules). It is very important that kernel modules are compiled 
+	using the correct kernel headers. Kernel modules should *always* be 
+	compiled using the same headers as was used to build the kernel. If 
+	headers from a different kernel version is used (or even from a 
+	different kernel configuration), then the result will probably not be a
+	usable kernel module.
 
 	Assuming the currently running kernel is 2.6.1-rc1, MOL expects the symlink
 
@@ -116,4 +94,8 @@ Running MOL
 		bash$ startmol -X	(to start MacOS X)
 
 
-More information might be available at the Mac-on-Linux website, http://www.maconlinux.org.
+Mac-On-Linux Website and Wiki
+=============================
+
+Please see the Mac-On-Linux website at: http://mac-on-linux.sourceforge.net for
+additional information.
