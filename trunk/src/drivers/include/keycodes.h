@@ -19,6 +19,9 @@
 
 #include "kbd_sh.h"
 
+/* Max # of keys in a keymap */
+#define MOL_KEY_MAX		127
+
 static inline int uses_linux_keycodes( void ) { 
 	extern int _uses_linux_keycodes; return _uses_linux_keycodes;
 }
