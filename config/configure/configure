@@ -1726,7 +1726,7 @@ ac_config_headers="$ac_config_headers config.h:config.h.in"
 # Test whether -traditional-cpp should be used
 ######################################################################
 
-test "$ARCH" == osx && {
+test "$ARCH" = osx && {
     unset OSX_10_1 OSX_10_2 OSX_10_3
     case `uname -r` in
 	5.*) OSX_10_1=y ;;

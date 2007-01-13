@@ -108,7 +108,8 @@ keycode_to_adb( int ktype, int keycode )
 
 	assert(kt->table);
 	if( keycode > kt->max || keycode < kt->min ) {
-		printm("Keycode %d out of range\n", keycode );
+		/* FIXME This is noisy now due to the usb/keycode fix */
+//		printm("Keycode %d out of range\n", keycode );
 		keycode = kt->min;
 	}
 

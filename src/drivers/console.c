@@ -29,7 +29,6 @@
 #include <termios.h>
 #include <linux/vt.h>          
 #include <linux/kd.h>
-#include <linux/input.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -223,7 +222,7 @@ keyboard_init( void )
 	kbd.handler_id = add_async_handler( vt.fd, POLLIN, console_key_event, 1 /* use SIGIO */ );
 	kbd.initialized = 1;
 
-	register_key_table( kConsoleKeytable, 0, KEY_MAX );
+	register_key_table( kConsoleKeytable, 0, MOL_KEY_MAX );
 	user_kbd_customize( kConsoleKeytable );
 
 	set_text_kbd();

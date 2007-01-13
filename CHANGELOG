@@ -1,6 +1,11 @@
 MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
+2007-01-12 Joseph Jezak <josejx@gentoo.org>
+	* Fixed test invocations (== is invalid)
+	* Fixed VT Switching
+2007-01-10 Joseph Jezak <josejx@gentoo.org>
+	* Updated BootX's init.S to match MOL's version
 2007-01-08 Joseph Jezak <josejx@gentoo.org>
 	* Removed Sheep from defconfig
 	* Fixed Ubuntu -fno-stack-protector bug
