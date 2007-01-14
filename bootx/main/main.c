@@ -29,6 +29,12 @@
 #include "sl.h"
 #include "osi_calls.h"
 #include "mol.h"
+
+/* Allows proper building within MOL source tree */
+#ifdef MOL_PROPER
+	#undef MOL_PROPER
+#endif
+
 #include "boothelper_sh.h"
 #include "ablk_sh.h"
 #include "pseudofs_sh.h"
