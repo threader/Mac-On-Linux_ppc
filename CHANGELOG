@@ -1,6 +1,8 @@
 MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
+2007-01-13 Joseph Jezak <josejx@gentoo.org>
+	* Added check for zlib
 2007-01-12 Joseph Jezak <josejx@gentoo.org>
 	* Fixed test invocations (== is invalid)
 	* Fixed VT Switching
