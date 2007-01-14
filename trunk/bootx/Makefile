@@ -1,59 +1,30 @@
 
-top-all:	
-include		rules/Makefile.top
+include			../config/Makefile.top
 
-#####################################################################
+SUBDIRS 		= fs libc main accel .
 
-configure: configure.in
-	./autogen.sh
+XTARGETS		= bootx
 
-AUTOFILES	= rules/Makefile.defs $(ARCHINCLUDES)/config.h
+bootx-OBJS		= fs/libfs.a libc/liblibc.a main/libmain.a \
+			  accel/libaccel.a
 
-top-all:	configure all
-all-local:	$(ARCHINCLUDES) $(AUTOFILES)
+CFLAGS			+= -fno-builtin -msoft-float
 
-$(AUTOFILES) : % : rules/Makefile.defs.in
-	@rm -f $@
-	@test -x config.status && ./config.status && exit 0 ; \
-	test -x ./configure && ./configure && exit 0 ; \
-	./autogen.sh && ./configure
-	@for x in $(AUTOFILES) ; do test -f $$x && chmod -w $$x ; done ; true
+# WARNING: We may only put things at 0x1c00000 - 0x1d00000.
+# We are very close to the end limit.
 
-AWKTEXT	:= ' { print "\#define MOL_MAJOR_VERSION " $$1 ; \
-		print "\#define MOL_MINOR_VERSION " $$2 ; \
-		print "\#define MOL_PATCHLEVEL " $$3 }' 
-
-$(ARCHINCLUDES) $(ARCHINCLUDES)/%: configure.in Makefile rules/Makefile.top
-	@rm -rf $(ARCHINCLUDES)
-	@install -d $(ARCHINCLUDES)
-	@{ DATE="$(shell echo `date +'%b %e %Y %H:%M'`)" ; \
-	   echo "#define MOL_BUILD_DATE \"$$DATE\"" ; \
-	   echo "#define MOL_VERSION_STR \"$(VERSION)\"" ; \
-	   echo "#define MOL_RELEASE \"$(RELEASENAME)\"" ; \
-	   echo $(VERSION) | awk -F . -- $(AWKTEXT) ; \
-	   echo = "Building BootX-$(VERSION)$(EXTRA_VERSION) [$$DATE]" 1>&2 ; \
-	} 2>&1 > $(ARCHINCLUDES)/molversion.h
+.dummy.c: Makefile
+	rm -f $@
+	echo "extern void _start(void);" > $@
+	echo "extern int main( void ); int main( void ) { _start(); return 0; }" >> $@
 
 
-#####################################################################
+bootx: Makefile $(ODIR)/libbootx.a $(ODIR)/.dummy.o
+	$(LD) -Ttext=0x1c01000 $(ODIR)/.dummy.o -Bstatic $(ODIR)/libbootx.a $(LIBGCC) -o $@ 
+	nm $@ | sort > bootx.syms
+	$(STRIP) $@
+	cp bootx ../mollib/drivers/bootx
 
-clean-local:
-	@rm -rf *.core .kmods $(ARCHINCLUDES)
+all-local: bootx
 
-distclean-local:
-	@rm -f $(AUTOFILES) config.* .config .config-*
-
-mrproper: distclean
-	@rm -f ./configure
-
-maintainerclean-local:
-	@rm -f ./configure
-
-#####################################################################
-
-SUBDIRS		= . src
-MAKE		+= -s
-
-#####################################################################
-
-include 	$(rules)/Rules.make
+include			$(rules)/Rules.make

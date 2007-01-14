@@ -1,5 +1,9 @@
 
-include		../../rules/Makefile.top
+include		../../config/Makefile.top
+
+INCLUDES	= -I ../include
+
+CFLAGS		+= -fno-builtin -msoft-float $(NOSTACKPROTECT)
 
 XTARGETS	= fs
 
