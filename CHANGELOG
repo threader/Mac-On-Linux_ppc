@@ -2,6 +2,7 @@ MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
 2007-01-15 Joseph Jezak <josejx@gentoo.org>
+	* Reverted BootX init.S changes (fixes cdboot bug)
 	* Fix bootstrap check
 2007-01-14 Joseph Jezak <josejx@gentoo.org>
 	* Fix dmdma.c strict aliasing warning
