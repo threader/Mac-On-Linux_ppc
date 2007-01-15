@@ -65,8 +65,9 @@ install-config:
 	@$(MAKE) -C Doc install-config-force	
 
 install: install-modules
-	@$(INSTALL_DIR) -v $(_bindir) $(_datadir) $(_etcdir) $(_vardir)
-	@$(INSTALL_DIR) -v $(_docdir) $(_libdir) $(_libdir)/bin/
+	@$(INSTALL_DIR) -v $(_bindir) $(_datadir) $(_etcdir) 
+	@$(INSTALL_DIR) -v $(_vardir) $(_vardir)/lock $(_vardir)/log
+	@$(INSTALL_DIR) -v $(_docdir) $(_libdir) $(_libdir)/bin/ 
 	@$(INSTALL_DIR) -v $(addprefix $(_datadir)/, images nvram drivers oftrees)
 	@$(INSTALL_DIR) -v $(addprefix $(_datadir)/, vmodes config syms graphics )
 
