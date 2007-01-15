@@ -43,7 +43,7 @@
  * The purpose of this is preventing any boot-strap partitions
  * from beeing mounted (and hence deblessed) in MacOS.
  */
-#define BOOTSTRAP_SIZE_MB	20
+#define BOOTSTRAP_SIZE_KB	20 * 1024
 
 static opt_entry_t blk_opts[] = {
 	{"-ro",			0 },
@@ -279,7 +279,7 @@ open_mac_disk( char *name, int flags, int constructed )
 	/* detect boot-strap partitions by the small size */
 	if( (flags & BF_ENABLE_WRITE) && (type & (kDiskTypeHFSPlus | kDiskTypeHFS)) ) {
 
-		if( bdev->size/1024 < BOOTSTRAP_SIZE_MB && !(flags & BF_FORCE) ) {
+		if( bdev->size/1024 < BOOTSTRAP_SIZE_KB && !(flags & BF_FORCE) ) {
 			printm("----> %s might be a boot-strap partition.\n", name );
 			ret = -1;
 		}
