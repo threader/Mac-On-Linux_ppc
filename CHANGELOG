@@ -2,6 +2,7 @@ MOL Changelog
 
 mol-0.9.72_pre2 (not released yet)
 2007-01-14 Joseph Jezak <josejx@gentoo.org>
+	* Fix dmdma.c strict aliasing warning
 	* Make sure that log and lock dirs are created
 2007-01-13 Joseph Jezak <josejx@gentoo.org>
 	* Integrated BootX with the build system

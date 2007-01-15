@@ -90,6 +90,11 @@ static char *key_names[] = {
 	"** RES **", "KEY_REGS", "KEY_SYSTEM", "KEY_DEVICE"
 };
 
+typedef union {
+	unsigned int * p_int;	
+	unsigned long * p_long;
+} punfix_t;
+
 enum {				/* DBDMA control registers. All little-endian */
 	r_control=0,		/* let you change bits in status */
 	r_status, 		/* dma and device status bits */
@@ -234,6 +239,8 @@ dump_dbdma_cmd( ulong mphys )
 {
 	struct dbdma_cmd *cp = (struct dbdma_cmd*)transl_ro_mphys( mphys );
 	short cmd;
+	punfix_t phy_addr;
+	punfix_t cmd_dep;
 	
 	if( !cp ) {
 		printm("dbdma: bad access\n");
@@ -247,9 +254,11 @@ dump_dbdma_cmd( ulong mphys )
 	       key_names[(cmd>>8)&0x7] );
 	printm("I:%02X  BR:%02X  W:%02X\n", (cmd & 0x30)>>4, 
 	       (cmd&0xc)>>2, (cmd&0x3) );
+	phy_addr.p_int = &(cp->phy_addr);
+	cmd_dep.p_int = &(cp->cmd_dep);
 	printm("req_count: %04X   phy_addr: %08X   cmd_dep: %08X\n", 
-	       ld_le16( &cp->req_count ), ld_le32( (ulong*)&cp->phy_addr), 
-	       ld_le32( (ulong*)&cp->cmd_dep ) );
+	       ld_le16( &cp->req_count ), ld_le32( phy_addr.p_long ), 
+	       ld_le32( cmd_dep.p_long ) );
 	printm("res_count: %04X   xfer_status: %04X\n",
 	       ld_le16( &cp->res_count ), ld_le16( &cp->xfer_status ));
 }
@@ -437,11 +446,17 @@ prepare_cmd( struct dbdma_channel *ch )
 {
 	ulong 	cp_phys;
 	int 	s;
+
+	union {
+		struct dbdma_cmd ** p_cmd;
+		char ** p_char;
+	} p;
 	
 	cp_phys = ld_le32( &ch->reg[r_cmdptr]);
 	
 	/* check that the address is valid (in RAM/ROM) */
-	s = mphys_to_lvptr( cp_phys, (char**)&ch->cur_cmd );
+	p.p_cmd = &(ch->cur_cmd);
+	s = mphys_to_lvptr( cp_phys, p.p_char );
 	
 	ch->cur_cmd_in_rom = 0;
 	if( s<0 ) {
@@ -497,6 +512,7 @@ start_cmd( struct dbdma_channel *ch )
 	int	key;
 	ulong	addr;
 	int	req_count;
+	punfix_t phy_addr;
 
 #ifdef DEBUG_DMA
 	printm("\n");
@@ -522,7 +538,8 @@ start_cmd( struct dbdma_channel *ch )
 		ch->may_branch = 1;
 
 		req_count = ld_le16( &cp->req_count );
-		addr = ld_le32( (ulong*)&cp->phy_addr );
+		phy_addr.p_int = &(cp->phy_addr);
+		addr = ld_le32( phy_addr.p_long );
 		
 		if( key == 0x400 ) {
 			printm("DBDMA: Reserved KEY 0x400\n");
@@ -547,7 +564,8 @@ start_cmd( struct dbdma_channel *ch )
 				VPRINT("DBDMA [%d]: Illegal key type %d\n", ch->irq, key );
 			key = KEY_SYSTEM;
 		}
-		addr = ld_le32( (ulong*)&cp->phy_addr );
+		phy_addr.p_int = &(cp->phy_addr);
+		addr = ld_le32( phy_addr.p_long );
 		req_count = ld_le16( &cp->req_count ) & 0x7;
 
 		/* endian stuff */
