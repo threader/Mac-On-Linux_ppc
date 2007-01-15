@@ -1,7 +1,8 @@
 MOL Changelog
 
-mol-0.9.72_pre2 (not released yet)
+mol-0.9.72_pre2
 2007-01-15 Joseph Jezak <josejx@gentoo.org>
+	* Added nvram.x installation back
 	* Reverted BootX init.S changes (fixes cdboot bug)
 	* Fix bootstrap check
 2007-01-14 Joseph Jezak <josejx@gentoo.org>
