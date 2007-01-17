@@ -454,7 +454,6 @@ mount_driver_volume( void )
 	
 	for( i=0; i<ablk.ndevs; i++ ) {
 		if( (ablk.devs[i].ablk_flags & ABLK_INFO_DRV_DISK) ) {
-			printm("Mounting MOL driver disk\n");
 			ablk.devs[i].ablk_flags &= ~ABLK_INFO_DRV_DISK;
 			ablk.devs[i].ablk_flags |= ABLK_INFO_MEDIA_PRESENT;
 			ablk_post_event( &ablk.devs[i], ABLK_EVENT_DISK_INSERTED );
