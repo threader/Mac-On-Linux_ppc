@@ -209,7 +209,7 @@ read_image( const unsigned char *name )
 	if( size == -1 )
 		perrorm("nvram, read_image: read");
 	else if( size != NVRAM_SIZE )
-		printm("WARNING: Could only read 0x%X byte from nvram-image\n", size );
+		printm("WARNING: Could only read 0x%X byte from nvram-image\n", (int) size );
 	else 
 		ret=0;
 
@@ -234,7 +234,7 @@ write_image( const unsigned char *name, int start, int len )
 	if( size == -1 )
 		perrorm("nvram, write_image: write");
 	else if( size != len )
-		printm("WARNING: Could only write 0x%X bytes to file\n", size );
+		printm("WARNING: Could only write 0x%X bytes to file\n", (int) size );
 	close(fd);
 }
 
