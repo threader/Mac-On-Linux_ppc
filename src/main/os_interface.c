@@ -117,7 +117,10 @@ osip_exit( int sel, int *params )
 static int
 osip_usleep( int sel, int *params )
 {
-	usleep(params[0]);
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = params[0];
+	nanosleep(&tv, NULL);
 	return 0;
 }
 

@@ -342,6 +342,9 @@ void
 async_cleanup( void )
 {
 	const char dummy_ch = 0;
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 1000;
 
 	if( !as.initstate )
 		return;
@@ -353,7 +356,7 @@ async_cleanup( void )
 		as.cancel_thread = 1;
 		write( as.ackpipe[1], &dummy_ch, 1 );
 		while( as.cancel_thread )
-			usleep(1);
+			nanosleep(&tv, NULL);
 	}
 
 	close( as.pipefds[0] );

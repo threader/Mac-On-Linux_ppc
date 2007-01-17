@@ -248,6 +248,9 @@ void
 cd_scsi_cleanup( void )
 {
 	idev_t *idev;
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 1000000;
 
 	while( (idev=x.devs) ) {
 		x.devs = idev->next;
@@ -255,7 +258,7 @@ cd_scsi_cleanup( void )
 		if( idev->running )
 			printm("Waiting upon SCSI completion\n");
 		while( idev->running )
-			usleep(1000);
+			nanosleep(&tv, NULL);
 		
 		pthread_mutex_destroy( &idev->lock );
 		unregister_scsidev( idev->scsi_dev );
