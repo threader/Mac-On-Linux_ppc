@@ -25,7 +25,7 @@ struct option {
 	int	val;
 };
 
-extern getopt_long( int argc, char **argv, const char *opts, 
+extern int getopt_long( int argc, char **argv, const char *opts, 
 		    struct option *opt, int *opt_index );
 
 #endif	/* __linux__ */

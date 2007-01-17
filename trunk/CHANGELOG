@@ -1,5 +1,8 @@
 MOL Changelog
 
+2007-01-16 Joseph Jezak <josejx@gentoo.org>
+	* Portability fixes
+
 mol-0.9.72_pre2
 2007-01-15 Joseph Jezak <josejx@gentoo.org>
 	* Added nvram.x installation back
