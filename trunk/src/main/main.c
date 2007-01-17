@@ -283,6 +283,11 @@ do_clearenv( void )
 int
 main( int argc, char **argv )
 {
+	/* Timespec struct for nanosleep workaround below */
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 1000000;
+
 	printm("Mac-on-Linux %s [%s]\n", MOL_RELEASE, MOL_BUILD_DATE );
 	printm("Copyright (C) 1997-2004 Samuel Rydh\n");
 
@@ -316,7 +321,7 @@ main( int argc, char **argv )
 	 * the SIGCHLD signal might be lost. It is not a serious problem but this
 	 * removes it for all practical purposes.
 	 */
-	usleep(1000);
+	nanosleep(&tv, NULL);
 
 	if( setsid() < 0 )
 		perrorm("setsid failed!\n");

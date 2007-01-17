@@ -105,6 +105,9 @@ do_connect( void )
 	int warned=0;
 	char *socket_name = molsocket_name(); 	/* malloced */
 	struct sockaddr_un addr;
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 100000000;
 
 	printm("Trying to connect to MOL...\n");
 	
@@ -127,7 +130,7 @@ do_connect( void )
 		if( warned++>3 )
 			printm("Waiting for MOL to start.\n"
 			       "Make sure the debugger nub is enabled ('debug: true')\n");
-		usleep(100000);
+		nanosleep(&tv, NULL);
 	}
 	printm("...connected\n");
 	sv.dgram_receiver = create_dgram_receiver( sv.fd );

@@ -108,6 +108,10 @@ nosound_write( char *dummybuf, int size )
 {
 	int usecs_res;
 	uint mark;
+
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 1000;
 	
 	if( !size )
 		return;
@@ -118,7 +122,7 @@ nosound_write( char *dummybuf, int size )
 		usecs_res = nosound.usecs_in_pipe - mticks_to_usecs(mark - nosound.tb_mark);
 		if( usecs_res <= 0 )
 			break;
-		usleep(1);
+		nanosleep(&tv, NULL);
 	}
 	nosound.usecs_in_pipe = usecs_res;
 	nosound.tb_mark = mark;

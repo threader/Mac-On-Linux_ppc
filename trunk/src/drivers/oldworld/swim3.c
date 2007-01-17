@@ -733,12 +733,16 @@ swim3_cleanup( void )
 {
 	char ch=0;
 	int i;
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 100000000;
+	
 
 	write( fs->control_pipe[1], &ch, 1 );
 
 	for( i=0; i<10 && !fs->exited; i++ ) {
 		sched_yield();
-		usleep( 100000 );
+		nanosleep(&tv, NULL);
 	}
 	close( fs->control_pipe[0] );
 	close( fs->control_pipe[1] );

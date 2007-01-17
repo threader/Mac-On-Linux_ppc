@@ -97,6 +97,9 @@ mainloop_start( void )
 {
 	int err;
 	_spr_changed();
+	struct timespec tv;
+	tv.tv_sec = 0;
+	tv.tv_nsec = 10000000;
 
 	/* must be called once before the mainloop is entered */
 	molcpu_mainloop_prep();
@@ -118,7 +121,7 @@ mainloop_start( void )
 			refresh_debugger();
 			while( __stop == kStop ) {
 				debugger_nub_poll();
-				usleep(10000);
+				nanosleep(&tv, NULL);
 			}
 			RETUNE_TIMERS;
 			break;
