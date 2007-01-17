@@ -17,6 +17,8 @@
 #ifndef _H_PPC_BYTEORDER
 #define _H_PPC_BYTEORDER
 
+#include "mol_config.h"
+
 #ifdef __darwin__
 #include <machine/endian.h>
 #else
