@@ -21,7 +21,7 @@ xlibs-$(CONFIG_XDGA)	+= -lXxf86dga
 mol-OBJS		= 
 mol-LDADD		= $(ODIR)/liballmol.a
 mol-LDFLAGS		= $(X_LIBS) $(FRAMEWORKS)
-mol-LIBS		= $(LIB_ALSA) $(LIB_PNG) $(xlibs-y) -lpthread -lm
+mol-LIBS		= $(LIB_ALSA) $(LIB_PNG) $(xlibs-y) -lpthread -lm -lz
 
 allmol-OBJS		= $(obj-y)
 obj-y			+= main/libmain.a
