@@ -20,6 +20,7 @@
 #include <sys/un.h>
 #include "poll_compat.h"
 #include <stddef.h>
+#include <time.h>
 
 #include "deb.h"
 #include "version.h"
