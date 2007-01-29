@@ -119,7 +119,7 @@ osip_usleep( int sel, int *params )
 {
 	struct timespec tv;
 	tv.tv_sec = 0;
-	tv.tv_nsec = params[0];
+	tv.tv_nsec = params[0] * 1000;
 	nanosleep(&tv, NULL);
 	return 0;
 }
