@@ -1,5 +1,8 @@
 MOL Changelog
 
+2007-02-02 Joseph E. Sacco
+	* Fix building RPMS
+	* Add Sheep and TUN back to defconfig
 2007-01-17 Joseph Jezak <josejx@gentoo.org>
 	* usleep -> nanosleep
 2007-01-16 Joseph Jezak <josejx@gentoo.org>

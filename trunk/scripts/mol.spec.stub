@@ -1,13 +1,11 @@
-
 Summary: Virtual machine capable of running Mac OS and Mac OS X
 Name: mol
 Version: %{version}
 Release: %{release}
-Copyright: GPL
+License: GPL
 Vendor: Ibrium HB
 Group: Applications/Emulators
-Source: ftp://ftp.nada.kth.se/pub/home/f95-sry/Public/mac-on-linux/mol-%{version}.tgz
-#Patch0: mol-misc.patch
+Source: http://downloads.sourceforge.net/mac-on-linux/mol-%{version}.tgz
 BuildRoot: /var/tmp/mol-root
 Requires: mol-kernel-modules
 ExclusiveArch: ppc
@@ -22,7 +20,6 @@ All PowerPC versions of Mac OS are supported (including MacOS MacoS 9 and MacOS 
 
 %prep
 %setup 
-#%patch0
 
 %build
 make defconfig
@@ -31,8 +28,6 @@ make BUILD_MODS=n prefix=/usr VENDOR=%_vendor_postfix
 
 %install
 make DESTDIR=$RPM_BUILD_ROOT install prefix=/usr
-rm -rf $RPM_BUILD_ROOT/moldoc
-mv -f $RPM_BUILD_ROOT/usr/share/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -44,10 +39,11 @@ rm -rf $RPM_BUILD_ROOT
 %define _mol_localstatedir	/var/lib/mol
 
 %files
-#%doc BUILDING COPYING COPYRIGHT CREDITS Doc/*
-%doc $RPM_BUILD_ROOT/moldoc/*
+%doc BUILDING COPYING COPYRIGHT CREDITS Doc/config Doc/Dev Doc/Boot-ROM 
+%doc Doc/Networking Doc/NewWorld-ROM Doc/Sound Doc/Video
 %config /etc/mol/session.map
 %config /etc/mol/tunconfig
+%config /etc/mol/yaboot.conf
 %config /etc/mol/dhcpd-mol.conf
 %config /etc/mol/molrc.input
 %config /etc/mol/molrc.linux
@@ -59,6 +55,7 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/mol/molrc.osx
 
 %_mol_localstatedir/nvram.nw
+%_mol_localstatedir/nvram.x
 
 %_mandir/man?/*
 
@@ -85,6 +82,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %_mol_localstatedir
 
 %changelog
+* Thu Feb 02 2006 Joseph Sacco <jsacco [at] gnome [dot] org>
+- rework to build successfully on a current Fedora system
 * Wed Jan 14 2004 Samuel Rydh <samuel@ibrium.se>
 - Modules are not built, vendor postfix added
 * Mon Jan 12 2004 Samuel Rydh <samuel@ibrium.se>
