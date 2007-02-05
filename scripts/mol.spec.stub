@@ -54,6 +54,8 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/mol/molrc.ow
 %config /etc/mol/molrc.osx
 
+%dir %_mol_localstatedir/lock
+%dir %_mol_localstatedir/log
 %_mol_localstatedir/nvram.nw
 %_mol_localstatedir/nvram.x
 
@@ -82,6 +84,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %_mol_localstatedir
 
 %changelog
+* Thu Feb 05 2006 Joseph Sacco <jsacco [at] gnome [dot] org>
+- create directories: /var/lib/mol/lock & /var/lib/mol/log 
 * Thu Feb 02 2006 Joseph Sacco <jsacco [at] gnome [dot] org>
 - rework to build successfully on a current Fedora system
 * Wed Jan 14 2004 Samuel Rydh <samuel@ibrium.se>
