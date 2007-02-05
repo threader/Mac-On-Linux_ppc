@@ -83,12 +83,21 @@ get_cpu_frequency( void )
 	FILE *f;
 
 	if( !clockf ) {
+		/* Open /proc/cpuinfo to get the clock */
 		if( (f=fopen("/proc/cpuinfo", "ro")) ) {
 			while( !clockf && fgets(buf, sizeof(buf), f) )
 				if( !strncmp("clock", buf, 5 ) && (p=strchr(buf,':')) )
 					clockf = strtol( p+1, NULL, 10 );
 			fclose(f);
 		}
+
+		/* If /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq 
+		 * exists, read the cpu speed from there instead */
+		if( (f=fopen("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", "ro")) ) {
+			fgets(buf, sizeof(buf), f);
+			clockf = strtol(buf, NULL, 10) / 1000;
+		}
+
 		if( clockf < 30 || clockf > 4000 ) {
 			printm("Warning: Using hardcoded clock frequency (350 MHz)\n");
 			clockf = 350;
