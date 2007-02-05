@@ -6,13 +6,19 @@ config PPC
 	help
 	  Building for PPC hardware.
 
-#menu "Special Build Targets"
+menu "Machine Specific Build Targets"
 #config MPC107
 #	bool "MPC107 board (Crescendo)"
 #	default n
 #	help
 #	  Build MOL for the Crescendo accelerator.
-#endmenu
+
+config AMIGAONE
+	bool "AmigaOne Support"
+	default n
+	help
+	  Build MOL without cache coherency to support the AmigaOne.
+endmenu
 
 config OLDWORLD
 	bool "Oldworld Support (for Mac OS 8.5 and earlier)"
