@@ -2,6 +2,8 @@ MOL Changelog
 
 2007-02-05 Joseph Jezak <josejx@gentoo.org>
 	* Fix CPU clock speed reporting
+2007-02-05 Joseph E. Sacco
+	* Add missing lock and log dirs to RPM generation
 2007-02-02 Joseph E. Sacco
 	* Fix building RPMS
 	* Add Sheep and TUN back to defconfig
