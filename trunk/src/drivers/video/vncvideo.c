@@ -706,7 +706,8 @@ vnc_thread( void *arg )
 			if( !read_exact(((unsigned char *)&request) + 1,
 					sz_rfbFramebufferUpdateRequestMsg - 1) < 0 )
 				goto endo;
-
+			if (!request.incremental)
+				force_redraw = true;
 			request_received = true;
 			//send_update();
 			break;
