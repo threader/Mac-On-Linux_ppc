@@ -1,14 +1,12 @@
-
 Summary: Mac-on-Linux kernel modules
 Name: mol-kmods
 Version: %{version}
 Release: %{release}
-Copyright: GPL
+License: GPL
 Vendor: Ibrium HB
 Group: Applications/Emulators
-Source: ftp://ftp.nada.kth.se/home/f95-sry/Public/mac-on-linux/mol-kmods-%{version}.tgz
+Source: http://downloads.sourceforge.net/mac-on-linux/mol-kmods-%{version}.tgz
 Provides: mol-kernel-modules
-#Patch0: mol-misc.patch
 BuildRoot: /var/tmp/mol-kmods-root
 ExclusiveArch: ppc
 
@@ -20,12 +18,11 @@ module (used for MOL networking).
 
 %prep
 %setup 
-#%patch0
 
 %build
 make defconfig
 make clean
-KERNEL_TREES=%kernel_trees ; if [ -d "$KERNEL_TREES" ] ; then make modules KERNEL_TREES=%kernel_trees ; else make modules ; fi
+make modules
 
 %install
 make install-modules DESTDIR=$RPM_BUILD_ROOT prefix=/usr
@@ -44,6 +41,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Feb 02 2006 Joseph Sacco <jsacco [at] gnome [dot] org>
+- rework to build successfully on a current Fedora system
 * Wed Jan 12 2004 Samuel Rydh <samuel@ibrium.se>
 - sheep_net removed from distribution (created dynamically)
 * Wed Jul 3 2002 Samuel Rydh <samuel@ibrium.se>

@@ -47,7 +47,7 @@ help:
 	@printf "\nDISTRIBUTION:\n"
 	@printf "  %-30s - %s\n" "make dist" "create tar archive"
 	@printf "  %-30s - %s\n" "make rpms" "build all RPMs"
-	@printf "  %-30s - %s\n" "make rpm" "build mol RPM"
+	@printf "  %-30s - %s\n" "make mol_rpm" "build mol RPM"
 	@printf "  %-30s - %s\n" "make kmods_rpm" "build kernel module RPM"
 	@echo
 
