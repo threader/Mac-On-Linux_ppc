@@ -669,16 +669,8 @@ static const ksym_tran_t ttab[] = {
 
 /* These fixes are not perfect (but reduces the need for manual tuning) */
 static const ksym_tran2_t ttab2[] = {
-	/* For myself */
-	{ XK_plus,		XK_grave,	0x18	},
-
-	/* U.S. */
-	{ XK_grave,		XK_asciitilde,	0x0a	},
-
-	/* fixes for Swedish (and others) */
+	/* Fixes for Swedish (and others) */
 	{ XK_apostrophe,	XK_asterisk,	0x2a	},
-	{ XK_dead_grave,	XK_dead_acute,	0x18	},
-	{ XK_grave,		XK_acute,	0x18	},
 
 	/* Norwegian */
 	{ XK_apostrophe,	XK_paragraph,	0x0a	},

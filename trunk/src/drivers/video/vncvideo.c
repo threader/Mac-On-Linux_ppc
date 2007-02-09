@@ -1164,7 +1164,7 @@ ks_decode( CARD32 ks )
 	case XK_9: case XK_parenleft: return 0x19;
 	case XK_0: case XK_parenright: return 0x1d;
  
-	case XK_grave: case XK_asciitilde: return 0x0a;
+	case XK_grave: case XK_asciitilde: return 0x32;
 	case XK_minus: case XK_underscore: return 0x1b;
 	case XK_equal: case XK_plus: return 0x18;
 	case XK_bracketleft:
