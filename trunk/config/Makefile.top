@@ -54,8 +54,8 @@ VENDOR		:=
 # No serviceable parts below
 #################################################################
 
-VERSION		:= 0.9.72
-EXTRA_VERSION	:= $(VENDOR)
+VERSION		:= 0.9.73
+EXTRA_VERSION	:= -SVN$(VENDOR)
 RELEASENAME	:= $(VERSION)$(EXTRA_VERSION)$(VENDOR)
 
 _prefix		= $(DESTDIR)$(prefix)

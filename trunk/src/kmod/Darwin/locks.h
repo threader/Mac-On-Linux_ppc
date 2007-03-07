@@ -17,42 +17,42 @@
 #ifndef _H_LOCKS
 #define _H_LOCKS
 
-#include <kern/simple_lock.h>
+#include <IOKit/IOLocks.h>
 
-/************** mutex locks **************/
+/************** Mutex Locks - Implemented by IOLock **************/
 
-typedef mutex_t *mol_mutex_t;
+typedef IOLock *mol_mutex_t;
 
 static inline void init_MUTEX_mol( mol_mutex_t *mup ) {
-	*mup = mutex_alloc( ETAP_NO_TRACE );
+	*mup = IOLockAlloc();
 }
 
 static inline void free_MUTEX_mol( mol_mutex_t *mup ) {
-	mutex_free( *mup );
+	IOLockFree(*mup);
 }
 
 static inline void down_mol( mol_mutex_t *mup ) {
-	mutex_lock( *mup );
+	IOLockLock(*mup);
 }
 
 static inline void up_mol( mol_mutex_t *mup ) {
-	mutex_unlock( *mup );
+	IOLockUnlock(*mup);
 }
 
 
-/************** spinlocks **************/
+/************** Spinlocks - Implemented by IOSimpleLock **************/
 
-typedef simple_lock_data_t mol_spinlock_t;
+typedef IOSimpleLock * mol_spinlock_t;
+
+static inline void spin_lock_init_mol (mol_spinlock_t *lock) {
+	IOSimpleLockInit(*lock);
+}
 
 static inline void spin_lock_mol( mol_spinlock_t *lock ) {
-	simple_lock( lock );
+	IOSimpleLockLock(*lock);
 }
 static inline void spin_unlock_mol( mol_spinlock_t *lock ) {
-	simple_unlock( lock );
+	IOSimpleLockUnlock(*lock);
 }
-static inline void spin_lock_init_mol( mol_spinlock_t *lock ) {
-	simple_lock_init( lock );
-}
-
 
 #endif   /* _H_LOCKS */
