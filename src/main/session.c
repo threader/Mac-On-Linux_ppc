@@ -290,7 +290,7 @@ read_session_data( char *stype, int id, char *ptr, size_t size )
 }
 
 int
-get_session_data_fd( char *stype, int id, int *fd, off_t *offs, int *size )
+get_session_data_fd( char *stype, int id, int *fd, off_t *offs, ssize_t *size )
 {
 	int type = stype_to_type(stype);
 	chunk_t *k;

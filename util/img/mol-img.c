@@ -45,6 +45,10 @@ void help(void);
 #define O_BINARY 0
 #endif
 
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
+#endif
+
 /* QCOW defines from blk_qcow.h */
 typedef struct QCowHeader {
     uint32_t magic;
