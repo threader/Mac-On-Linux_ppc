@@ -13,8 +13,22 @@
 #ifndef _H_LIBC
 #define _H_LIBC
 
+/* Types */
 #include <sys/types.h>
+#ifndef ulong
+#define ulong			unsigned long
+#endif /* ulong */
+
+/* Byteswap */
+#ifdef __linux__
 #include <byteswap.h>
+#endif /* __linux__ */
+
+#ifdef __darwin__
+#include <architecture/byte_order.h>
+#define bswap_16(x)		OSSwapInt16(x)
+#define bswap_32(x)		OSSwapInt32(x)
+#endif /* __darwin__ */
 
 #define printf	printm
 extern int	printm( const char *fmt, ... );
