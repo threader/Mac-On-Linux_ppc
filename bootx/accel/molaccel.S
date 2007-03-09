@@ -42,14 +42,14 @@
 	
 
 #define AFUNC(s,func)				\
-	.data ; func##_str:			;\
+	.data 17 ; func##_str:			;\
 	.ascii	s,"\0" ; balign_4 		;\
-	.data ; .long func##_str, func	;\
+	.data 19 ; .long func##_str, func	;\
 	.text ; GLOBL(func)
 
-	.data
+	.data 18
 GLOBL(accel_table__start):
-	.data
+	.data 20
 GLOBL(accel_table__end):	
 	
 
