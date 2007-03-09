@@ -23,6 +23,11 @@
  * @APPLE_LICENSE_HEADER_END@
  */
 
+#include "mol_config.h"
+#include "processor.h"
+#include "asmdefs.h"
+#include "osi.h"
+
 /*
  * OS X uses MMU splitmode in certain situations. Unfortunately, data
  * access from MMU splitmode is quite expensive in MOL. To speed up
@@ -35,20 +40,16 @@
  * Absolute addressing is prohibited since this code is relocated...
  */
 	
-changequote([[[[[,]]]]]) [[[[[	/* shield includes from m4-expansion */
-#include "asmdefs.h"
-#include "processor.h"
-#include "osi.h"
 
 #define AFUNC(s,func)				\
-	.data 17 ; func##_str:			;\
-	.ascii	s "\0" ; balign_4 		;\
-	.data 19 ; .long func##_str, func	;\
+	.data ; func##_str:			;\
+	.ascii	s,"\0" ; balign_4 		;\
+	.data ; .long func##_str, func	;\
 	.text ; GLOBL(func)
 
-	.data	18
+	.data
 GLOBL(accel_table__start):
-	.data	20
+	.data
 GLOBL(accel_table__end):	
 	
 

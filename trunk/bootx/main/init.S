@@ -14,21 +14,19 @@
  *   
  */
 
+#include "mol_config.h"
+#include "processor.h"
+#include "asmdefs.h"
+
+#ifdef __darwin__
+	.section .bss,
+#else
 	.section .bss
-	.balign 32
+#endif
+	balign_32
 	.space	1024*256		// 256 K stack
 stack:	.space  64
 
-#define	r1	1
-#define	r2	2
-#define	r3	3
-#define	r4	4
-#define	r5	5
-#define	r6	6
-
-#define GLOBL(lab)	; .globl lab ; lab
-
-	
 /************************************************************************/
 /*	Exception Vectors						*/
 /************************************************************************/
@@ -41,12 +39,14 @@ GLOBL(__vectors):
 
 	.org 0x20
 GLOBL(_start):
-	lis	r1,(stack)@ha
-	addi	r1,r1,(stack)@l
-	bl	entry
+	LOADI 	r1, stack
+	bl	EXTERN(entry)
 trap_error:
 	mflr	r3
-	b unexpected_excep
+	LOADI	r4,EXTERN(unexpected_excep)
+	mtctr	r4
+	bctrl
+1:	b	1b
 
 	ILLEGAL_VECTOR( 0x100 )
 	ILLEGAL_VECTOR( 0x200 )
