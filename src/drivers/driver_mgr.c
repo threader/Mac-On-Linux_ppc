@@ -32,6 +32,7 @@ typedef struct {
 	driver_interface_t	*interface;
 } driver_t;
 
+/* All of the possible drivers that may be loaded */
 extern driver_interface_t	osi_driver;
 extern driver_interface_t	pseudofs_driver;
 extern driver_interface_t	osi_mouse_driver;
@@ -67,10 +68,11 @@ extern driver_interface_t	scsi_driver;
 extern driver_interface_t	tty_driver;
 extern driver_interface_t	ioports_driver;
 extern driver_interface_t	rtas_driver;
-#ifdef CONFIG_PCIPROXY
 extern driver_interface_t	pciproxy_driver;
-#endif
+extern driver_interface_t	sdl_driver;
+extern driver_interface_t	sdl_video_driver;
 
+/* If the driver is optional, make sure to #ifdef it */
 static driver_t drivers[] = {
 	{ 0,	&osi_driver },
 	{ 0,	&ioports_driver },
@@ -96,6 +98,12 @@ static driver_t drivers[] = {
 #ifdef CONFIG_X11
 	{ 0,	&x11_common_driver },
 #endif
+#ifdef CONFIG_SDL
+	{ 0, 	&sdl_driver },
+#ifdef CONFIG_SDL_VIDEO
+	{ 0,	&sdl_video_driver },
+#endif /* SDL_VIDEO */
+#endif /* SDL */
 	{ 0,	&video_driver },
 	{ 0,	&mac_enet_driver },
 	{ 0,	&enet2_driver },
@@ -108,6 +116,8 @@ static driver_t drivers[] = {
 #endif
 };
 
+/* OW Drivers are seperate because they are only loaded if an oldworld
+ * boot is done, not in general */
 #ifdef OLDWORLD_SUPPORT
 static driver_t ow_drivers[] = {
 	{ 0,	&old_scsi_driver },

@@ -1,12 +1,12 @@
 mainmenu "Mac-on-Linux Configuration"
 
+menu "Machine Specific Build Targets"
 config PPC
 	bool
 	default y
 	help
-	  Building for PPC hardware.
+	  No help yet.
 
-menu "Machine Specific Build Targets"
 #config MPC107
 #	bool "MPC107 board (Crescendo)"
 #	default n
@@ -18,39 +18,67 @@ config AMIGAONE
 	default n
 	help
 	  Build MOL without cache coherency to support the AmigaOne.
-endmenu
 
 config OLDWORLD
-	bool "Oldworld Support (for Mac OS 8.5 and earlier)"
+	bool "Oldworld Support"
 	default y
 	help
-	  No help yet.
+	  Builds MOL with support for Old World ROMs and hardware,
+	  required for booting MacOS 8.5 and earlier.
+endmenu
+
+### SDL is a hidden symbol, we add support for the main driver here
+config SDL
+	bool
+	default n
+	help
+		Enables the main SDL driver if SDL Video or Audio is selected
+
+menu "Video Drivers"
+#config SDL_VIDEO
+#	bool "SDL video"
+#	default y
+#	select SDL
+#	help
+#	  Enables SDL Video Input and Output functionality.  This driver is
+#	  under development, but will replace the others eventually.
 
 config FBDEV
-	bool "FBDEV Video Support"
+	bool "Framebuffer device video"
 	default y
 	help
-	  No help yet.
+	  The FBDev Video Driver provides Input and Output functionality
+	  through the Framebuffer Console.
 
 config X11
-	bool "X11 Support"
+	bool "X11 video"
 	default y
 	help
-	  No help yet.
-
-config VNC
-	bool "VNC Server Support"
-	default y
-	help
-	  This option makes it possible to run MOL as a VNC server (serving the
-	  video output to a remote host). This driver is somewhat buggy...
+	  The X11 driver provides Input and Output through an X window.
 
 config XDGA
 	depends X11
 	bool "X11 DGA support (obsolete)"
 	default y
 	help
-	  No help yet.
+	  This driver may speed up X11 rendering on some systems.
+
+config VNC
+	bool "VNC server support"
+	default y
+	help
+	  This option makes it possible to run MOL as a VNC server (serving the
+	  video output to a remote host). This driver is somewhat buggy...
+endmenu
+
+menu "Sound Drivers"
+config SDL_SOUND
+	bool "SDL sound support"
+	select SDL
+	default y
+	help
+	  Builds the SDL sound driver.  This driver is under development, but
+	  will replace the others eventually.
 
 config ALSA
 	bool "ALSA sound support"
@@ -63,7 +91,12 @@ config OSS
 	default y
 	help
 	  Support for OSS sound devices (/dev/dsp).
+endmenu
 
+# Network Drivers
+source "src/netdriver/Kconfig"
+
+menu "Device Support" 
 config USBDEV
 	bool "Generic USB support (USBDEV)"
 	default y
@@ -71,13 +104,16 @@ config USBDEV
 	  Support for generic USB devices.
 
 config PCIPROXY
-	bool "pci proxying support"
+	bool "PCI-Proxy support"
 	default n
 	help
-	  Enable this option if you want to access pci devices in the host system from the guest
-	  OS. This should work for most pci device, however, there are some restrictions
-	  concerning bus mastering etc. You will also have to add configuration options that
-	  provide device tree information for the devices you want to make available.
+	  Enable this option if you want to access PCI devices in the host 
+	  system from the guest OS. This should work for most PCI devices,
+	  however, there are some restrictions concerning bus mastering etc.
+	  You will also have to add configuration options that provide device
+	  tree information for the devices you want to make available.
+	  Not recommended for general use.
+endmenu
 
 menu "Debugging"
 config DEBUGGER
@@ -121,6 +157,3 @@ config HOSTED
 
 
 endmenu
-
-source "src/netdriver/Kconfig"
-

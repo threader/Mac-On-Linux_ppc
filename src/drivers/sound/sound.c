@@ -57,8 +57,8 @@ static struct {
 	/* output driver */
 	sound_ops_t	*ops;
 
-	/* dubble buffering */
-	int		dbufsize;	/* dubbel buffer size */
+	/* double buffering */
+	int		dbufsize;	/* double buffer size */
 	char		*dbuf_src;	/* next input buffer */
 	int		dbuf_srcsize;	/* size of input buffer */
 	volatile int	dbuf_go;	/* generate irqs */
@@ -212,7 +212,7 @@ dbuf_engine( void )
 	int dbuf_cnt = 0;
 
 	for( ;; ) {
-		/* dubbel buffering */
+		/* double buffering */
 		if( dbuf_cnt ) {
 			if( ss.vol_updated && ss.ops->volume ) {
 				ss.vol_updated = 0;
@@ -224,7 +224,7 @@ dbuf_engine( void )
 			LOCK;
 		}
 
-		/* switch dubbelbuffer */
+		/* switch doublebuffer */
 		if( !ss.dbuf_srcsize ) {
 			if( ss.thread_running < 0 )
 				break;
@@ -326,7 +326,7 @@ set_mode( int format, int rate )
 	ss.fragsize = fragsize;
 	ss.format = format;
 
-	/* set dubbelbuffer size (must be a fragsize multiple) */
+	/* set doublebuffer size (must be a fragsize multiple) */
 	if( (size=get_numeric_res("sound.bufsize")) == -1 )
 		size = fragsize * 2;
 	for( bufsize=fragsize*2; bufsize < size ; bufsize += fragsize )
@@ -473,7 +473,7 @@ osip_sound_cntl( int sel, int *params )
 	case kSoundPause:
 		pause_sound();
 		break;
-	case kSoundGetBufsize: /* return dubbelbuf size */
+	case kSoundGetBufsize: /* return doublebuf size */
 		/* printm("kSoundGetFragsize: %d (hw %d)\n", ss.dbufsize, ss.fragsize ); */
 		return ss.dbufsize;
 
@@ -486,7 +486,11 @@ osip_sound_cntl( int sel, int *params )
 	return 0;
 }
 
-/* phys_buffer, len, restart */
+/* Params:
+ * phys_buffer - Physical Buffer Address (cast as int)
+ * len - Length of Buffer
+ * restart - Restart the engine? (not used)
+ */
 static int
 osip_sound_write( int sel, int *params )
 {
@@ -508,7 +512,11 @@ osip_sound_write( int sel, int *params )
 	return 0;
 }
 
-/* hwVolume, speakerVolume, hwMute */
+/* Params:
+ * hwVolume: Volume setting
+ * speakerVolume: Unused
+ * hwMute: Mute boolean
+ */
 static int
 osip_volume( int sel, int *params )
 {
@@ -530,7 +538,7 @@ osip_volume( int sel, int *params )
 	return 0;
 }
 
-
+/* Plays the initial startup sound */
 static void
 startboing( void )
 {
@@ -599,6 +607,8 @@ osi_sound_init( void )
 			break;
 		if( s && !strcasecmp("any", s) )
 			s = NULL;
+		if( (!s || !strcasecmp("sdl_sound", s)) && (ss.ops=sdl_sound_probe(s?1:0)) )
+			break;
 		if( (!s || !strcasecmp("alsa", s)) && (ss.ops=alsa_probe(s?1:0)) )
 			break;
 		if( (!s || !strcasecmp("oss", s) || !strcasecmp("dsp", s)) && (ss.ops=oss_probe(s?1:0)) )

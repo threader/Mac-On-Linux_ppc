@@ -16,7 +16,7 @@ obj-$(CONFIG_FBDEV)	+= fbdev.o
 obj-y			+= video.o offscreen.o
 
 
-CFLAGS			+= $(X_CFLAGS) $(XDGA_CFLAGS)
+CFLAGS			+= $(X_CFLAGS) $(XDGA_CFLAGS) 
 
 
 include			$(rules)/Rules.make

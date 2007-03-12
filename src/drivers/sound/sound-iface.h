@@ -44,4 +44,13 @@ extern sound_ops_t 		*alsa_probe( int exact );
 static inline sound_ops_t	*alsa_probe( int exact ) { return NULL; }
 #endif
 
+#ifdef CONFIG_SDL_SOUND
+extern sound_ops_t		*sdl_sound_probe(int exact);
+#else
+static inline sound_ops_t	*sdl_sound_probe(int exact) { return NULL; }
+#endif
+
+/* We always build the no sound plugin */
+extern sound_ops_t		*nosound_prove(int exact);
+
 #endif   /* _H_SOUND_IFACE */
