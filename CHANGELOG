@@ -1,5 +1,7 @@
 MOL Changelog
 
+2007-03-12 Joseph Jezak <josejx@gentoo.org>
+	* Update netdriver Kconfig
 2007-03-06 Joseph Jezak <josejx@gentoo.org>
 	* OSX Compatibility fixes
 
