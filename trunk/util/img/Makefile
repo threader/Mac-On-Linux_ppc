@@ -12,7 +12,7 @@
 
 include		../../config/Makefile.top 
 
-PROGRAMS	= mol-img
+PROGRAMS		= mol-img
 mol-img-OBJS		= mol-img.o
 
 all-local:	
