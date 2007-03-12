@@ -5,7 +5,7 @@
 Configuration
 =============
 
-	Before the compilation, a configuration menu will appears allowing
+	Before the compilation, a configuration menu will appear allowing
 	MOL configuration settings to be tweaked. It is possible to return to
 	this menu later by issuing the command 'make menuconfig'.
 
