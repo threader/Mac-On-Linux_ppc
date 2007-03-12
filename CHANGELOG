@@ -5,6 +5,7 @@ MOL Changelog
 	* Re-arrange the Kconfig menus
 	* Add SDL master driver
 	* Add SDL sound driver
+	* Remove configure directory
 2007-03-06 Joseph Jezak <josejx@gentoo.org>
 	* OSX Compatibility fixes
 
