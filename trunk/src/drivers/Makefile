@@ -11,15 +11,14 @@ obj-y			+= driver_mgr.o ioports.o keycodes.o kbd.o via-cuda.o \
 			   pci-bridges.o osi_mouse.o osi_driver.o usb.o rtas.o hostirq.o
 
 obj-$(LINUX)		+= console.o
-
-
+obj-$(CONFIG_USBDEV)	+= usbdev.o
+obj-$(CONFIG_TTYDRIVER)	+= tty.o
+obj-$(CONFIG_PCIPROXY)	+= pciproxy.o
+obj-$(CONFIG_SDL)	+= sdl.o
 obj-y			+= disk/libdisk.a
 obj-y			+= video/libvideo.a
 obj-y			+= net/libnet.a
 obj-y			+= sound/libsound.a
 obj-$(CONFIG_OLDWORLD)	+= oldworld/liboldworld.a
-obj-$(CONFIG_USBDEV)	+= usbdev.o
-obj-$(CONFIG_TTYDRIVER)	+= tty.o
-obj-$(CONFIG_PCIPROXY)	+= pciproxy.o
 
 include			$(rules)/Rules.make

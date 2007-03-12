@@ -2,6 +2,9 @@ MOL Changelog
 
 2007-03-12 Joseph Jezak <josejx@gentoo.org>
 	* Update netdriver Kconfig
+	* Re-arrange the Kconfig menus
+	* Add SDL master driver
+	* Add SDL sound driver
 2007-03-06 Joseph Jezak <josejx@gentoo.org>
 	* OSX Compatibility fixes
 

@@ -27,30 +27,32 @@
 
 /* OSI_SOUND_CNTL selectors */
 enum { 
-	kSoundCheckAPI		= -1,
-	kSoundStop		= 0,
-	kSoundStart		= 1,
-	kSoundGetBufsize	= 2,		/* used to be called kSoundGetFragsize */
-	kSoundRouteIRQ		= 3,
-	kSoundFlush		= 4,
-	kSoundResume		= 5,
-	kSoundQueryFormat	= 6,
-	kSoundSetFormat		= 7,
-	kSoundPause		= 9,
-	kSoundSetupRing		= 10,
-	kSoundGetRingSample	= 11,
-	kSoundOSXDriverVersion	= 12,
-	kSoundClassicDriverVersion = 13,
-	kSoundGetSampleOffset	= 14,		/* hands-off zone (in frames) */
-	kSoundGetSampleLatency	= 15		/* internal buffering (in frames) */
+	kSoundCheckAPI			= -1,
+	kSoundStop			= 0,
+	kSoundStart			= 1,
+	kSoundGetBufsize		= 2,		/* used to be called kSoundGetFragsize */
+	kSoundRouteIRQ			= 3,
+	kSoundFlush			= 4,
+	kSoundResume			= 5,
+	kSoundQueryFormat		= 6,
+	kSoundSetFormat			= 7,
+	kSoundPause			= 9,
+	kSoundSetupRing			= 10,
+	kSoundGetRingSample		= 11,
+	kSoundOSXDriverVersion		= 12,
+	kSoundClassicDriverVersion	= 13,
+	kSoundGetSampleOffset		= 14,		/* hands-off zone (in frames) */
+	kSoundGetSampleLatency		= 15		/* internal buffering (in frames) */
 };
 
 enum {
-	kSoundFormat_U8		= 1,
-	kSoundFormat_S16_BE	= 2,
-	kSoundFormat_S16_LE	= 4,
-	kSoundFormat_Stereo	= 16,
-	kSoundFormat_Len1Mask	= kSoundFormat_U8
+	kSoundFormat_U8			= 1,
+	kSoundFormat_S16_BE		= 2,
+	kSoundFormat_S16_LE		= 4,
+	kSoundFormat_Stereo		= 16,
+	kSoundFormat_Len1Mask		= kSoundFormat_U8
 };
+
+#define kSoundFormatMask		0x0007
 
 #endif   /* _H_SOUND_SH */
