@@ -18,7 +18,7 @@
 #include "mol_config.h"
 #include "sound-iface.h"
 
-#define NUM_SDL_SOUND_BUFFERS	2
+#define NUM_SDL_SOUND_BUFFERS	 16		/* ~64k for most setups */
 
 /* This struct holds persistant data for the sdl sound device */
 typedef struct {
@@ -29,46 +29,55 @@ typedef struct {
 	/* Current sound format (AudioSpec) */
 	SDL_AudioSpec *format;
 
-	/* Sound buffer */
+	/* Circular sound buffer */
 	unsigned char *buf;
+	/* Size of the buffer */
 	int buf_sz;
-	/* Length of sound in buffer */
-	int buf_len;
+	/* Pointer to current buffer position */
+	unsigned char *buf_head;
+	/* Pointer to end of buffer position */
+	unsigned char *buf_tail;
+	/* Length of data in buffer */
+	int buf_used;
 	/* Audio Semaphore for access to the data */
 	SDL_mutex *buf_lock;
 
 
 } sdl_sound_info_t;
 
-sdl_sound_info_t	sdl_snd;
+static sdl_sound_info_t	s;
 
 /******************************************************************************
  * SDL Interface
  *****************************************************************************/
 
-/* Callback function for SDL sound */
+/* Callback function for SDL sound 
+ * NOTE: This assumes that data doesn't cross the buffer 
+ * OSX writes in 2K chunks...
+ */
 static void sdl_sound_stream (void *arg, u8 *stream, int stream_len) {
-	SDL_LockMutex(sdl_snd.buf_lock);
+	int copy_amt;
+	SDL_LockMutex(s.buf_lock);
+	DEBUG_SND("Stream Length: %i\n", stream_len);
+	/* Write out 0's to the stream so we can mix it */
+	memset(stream, 0, stream_len);
 	/* If we've got data to push */
-	if (sdl_snd.buf_len > stream_len) {
-		/* Copy the sound data to the stream */	
-		memcpy(stream, sdl_snd.buf, stream_len);
-		sdl_snd.buf_len = sdl_snd.buf_len - stream_len;
-		SDL_UnlockMutex(sdl_snd.buf_lock);
-	}
-	/* If we don't have enough data to fill the stream */
-	else if (sdl_snd.buf_len) {
-		/* Copy the sound data to the stream */	
-		memcpy(stream, sdl_snd.buf, sdl_snd.buf_len);
-		/* Zero out any additional samples */
-		memset(stream + sdl_snd.buf_len, 0, stream_len - sdl_snd.buf_len);
-		sdl_snd.buf_len = 0;
-		SDL_UnlockMutex(sdl_snd.buf_lock);
+	if (s.buf_used > 0) {
+		copy_amt = (s.buf_used < stream_len) ? s.buf_used : stream_len;
+		/* Copy the data */
+		/* FIXME Volume */
+		SDL_MixAudio(stream, s.buf_head, copy_amt, s.lvol);
+		s.buf_head += (s.buf_used < stream_len) ? s.buf_used : stream_len;
+		s.buf_used = (s.buf_used < stream_len) ? 0 : s.buf_used - stream_len;
+		if(s.buf_head >= s.buf + s.buf_sz)
+			s.buf_head = s.buf;
+		SDL_UnlockMutex(s.buf_lock);
 	}
 	/* Otherwise, just write out silence */
 	else {
-		SDL_UnlockMutex(sdl_snd.buf_lock);
+		SDL_UnlockMutex(s.buf_lock);
 		memset(stream, 0, stream_len);
+		DEBUG_SND("Wrote: %i of silence\n", stream_len);
 	}
 }
 
@@ -157,6 +166,7 @@ static int sdl_sound_query (int format, int rate, int *fragsize) {
 		if (fmt == kSoundFormat_U8 && s->format != AUDIO_U8)
 			ret = -1;
 		*fragsize = s->samples;
+		DEBUG_SND("SND: Frag size: %i\n", s->samples);
 		SDL_CloseAudio();
 	}
 	/* Free the spec */
@@ -166,24 +176,26 @@ static int sdl_sound_query (int format, int rate, int *fragsize) {
 
 /* Open the audio device */
 static int sdl_sound_open (int format, int rate, int *fragsize, int ringmode) {
-	printm("SDL Sound Open\n");
-	sdl_snd.format = sdl_sound_init_spec(format, rate);
-	if (sdl_snd.format == NULL) {
+	DEBUG_SND("SDL Sound Open (format: %i rate: %i)\n", format, rate);
+	s.format = sdl_sound_init_spec(format, rate);
+	if (s.format == NULL) {
 		printm("Unable to alloc the audio spec\n");
 		return -1;
 	}
 	
 	/* Open the audio device -- we assume that the format is okay from the query earlier */
-	if (SDL_OpenAudio(sdl_snd.format, sdl_snd.format) < 0) {
+	if (SDL_OpenAudio(s.format, s.format) < 0) {
 		printm("Unable to open the audio device: %s", SDL_GetError());
 		return -1;
 	}
-	*fragsize = sdl_snd.format->samples;
+	*fragsize = s.format->samples;
 
 	/* Allocate memory for the buffer */
-	sdl_snd.buf_sz = sdl_snd.format->samples * NUM_SDL_SOUND_BUFFERS;
-	sdl_snd.buf = malloc(sdl_snd.buf_sz);
-	sdl_snd.buf_len = 0;
+	s.buf_sz = s.format->samples * NUM_SDL_SOUND_BUFFERS;
+	s.buf = malloc(s.buf_sz);
+	s.buf_used = 0;
+	s.buf_head = s.buf;
+	s.buf_tail = s.buf;
 
 	/* Okay, we're ready to start sound playback */
 	SDL_PauseAudio(0);
@@ -195,27 +207,34 @@ static void sdl_sound_close (void) {
 	/* Cleanup ! */
 	SDL_CloseAudio();
 	/* Free the buffer */
-	free(sdl_snd.buf);
+	free(s.buf);
 	/* Free AudioSpec */
-	if(sdl_snd.format != NULL)
-		free(sdl_snd.format);
+	if(s.format != NULL)
+		free(s.format);
 }
 	
-/* Write audio buffers */
+/* Write audio buffers 
+ * NOTE: This assumes that data doesn't cross the buffer 
+ * OSX writes in 2K chunks... 
+ */
 static void sdl_sound_write (char *fragptr, int size) {
-	SDL_LockMutex(sdl_snd.buf_lock);
-	if(size <= sdl_snd.buf_sz) {
-		/* Mix the incoming audio stream with the current volume */
-		/* FIXME Forced to lvol for now */
-		SDL_MixAudio(sdl_snd.buf, (unsigned char *) fragptr, size, sdl_snd.lvol);
-		sdl_snd.buf_len = size;
-		SDL_UnlockMutex(sdl_snd.buf_lock);
+	DEBUG_SND("SDL Sound Write: %i bytes\n", size);
+	SDL_LockMutex(s.buf_lock);
+	/* Check for overrun */
+	if(s.buf_used + size > s.buf_sz) {
+		SDL_UnlockMutex(s.buf_lock);
+		printm("SDL Sound: Overrun detected, discarding data\n");	
+		return;
 	}
-	else {
-		SDL_UnlockMutex(sdl_snd.buf_lock);
-		/* Overrun! */
-		printm("SDL_sound: Buffer overrun: Size: %i Buffer Length: %i Max Buffer Length: %i\n", size, sdl_snd.buf_len, sdl_snd.buf_sz);
-	}
+	
+	/* Data fits in buffer */
+	memcpy(s.buf_tail, fragptr, size);
+	s.buf_used += size;
+	s.buf_tail += size;
+	/* Loop back */
+	if (s.buf_tail >= s.buf + s.buf_sz)
+		s.buf_tail = s.buf;
+	SDL_UnlockMutex(s.buf_lock);
 }
 
 /* Flush the audio buffers */
@@ -226,8 +245,8 @@ static void sdl_sound_flush (void) {
 /* Change the volume */
 static void sdl_sound_volume (int lvol, int rvol) {
 	/* Volumes should already be adjusted... */
-	sdl_snd.lvol = lvol;
-	sdl_snd.rvol = rvol;
+	s.lvol = lvol;
+	s.rvol = rvol;
 }
 
 static sound_ops_t sdl_sound_driver_ops = {
@@ -242,8 +261,8 @@ static sound_ops_t sdl_sound_driver_ops = {
 
 /* Exact indicates whether we called this explicitly or the user specified "any" */
 sound_ops_t * sdl_sound_probe(int exact) {
-	printm("SDL sound driver\n");
+	printm("SDL sound driver loaded\n");
 	/* Do we always say okay?  I think so... */
-	sdl_snd.format = NULL;
+	s.format = NULL;
 	return &sdl_sound_driver_ops;
 }
