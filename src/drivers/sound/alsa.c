@@ -225,7 +225,7 @@ alsa_probe( int exact )
 	else
 		printm("ALSA device unavailable (will be used anyway)\n");
 
-	printm("ALSA sound driver (device '%s')\n", name);
+	printm("ALSA sound driver loaded (device '%s')\n", name);
 	if( !alsa.pcm_elem )
 		printm("ALSA: failed to setup mixer\n");
 	return &alsa_driver_ops;

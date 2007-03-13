@@ -37,6 +37,3 @@ extern pthread_t		__main_th;
 #define get_main_th()		( __main_th )
 
 #endif   /* _H_THREAD */
-
-
-

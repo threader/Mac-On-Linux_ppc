@@ -30,14 +30,12 @@
 #include "mac_registers.h"
 #include "sound-iface.h"
 
-
 static struct {
 	pthread_mutex_t lock;
 	int		irq;
 	int		started;
 
 	/* misc */
-	int		save_priority;	/* old nice level of main thread */
 	int		rate_limit;	/* user imposed rate restriction */
 	volatile int	thread_running;	/* 2=restarting, 1=running, 0=dead, -1=exiting */
 
@@ -78,7 +76,6 @@ static struct {
 
 #define LOCK		pthread_mutex_lock( &ss.lock )
 #define UNLOCK		pthread_mutex_unlock( &ss.lock )
-
 
 
 /************************************************************************/
@@ -229,7 +226,7 @@ dbuf_engine( void )
 			if( ss.thread_running < 0 )
 				break;
 			/* buffer underrun, drop frame */
-			/* printm("sndframe dropped\n"); */
+			DEBUG_SND("Sound Double Buffer: Sound frame dropped\n");
 			memset( dbuf, 0, ss.dbufsize );
 			dbuf_cnt = ss.dbufsize;
 		} else {
@@ -252,8 +249,6 @@ dbuf_engine( void )
 static void
 audio_thread( void *dummy )
 {
-	/* setpriority( PRIO_PROCESS, getpid(), -20 ); */
-
 	LOCK;
 	if( ss.ringbuf )
 		ring_engine();
@@ -271,7 +266,6 @@ audio_thread( void *dummy )
 		ss.startboingbuf = NULL;
 	}
 	UNLOCK;
-	/* setpriority( PRIO_PROCESS, getpid(), 0 ); */
 }
 
 
@@ -333,7 +327,7 @@ set_mode( int format, int rate )
 		;
 	ss.dbufsize = bufsize;
 
-	/* printm("SoundMode: %x, %d Hz, %d/%d\n", format, rate, fragsize, bufsize ); */
+	DEBUG_SND("SoundMode: %x, %d Hz, %d/%d\n", format, rate, fragsize, bufsize );
 	return 0;
 }
 
@@ -345,8 +339,6 @@ stop_sound( void )
 	ss.started = 0;
 
 	LOCK;
-	/* setpriority( PRIO_PROCESS, getpid(), ss.save_priority ); */
-
 	ss.thread_running = -1;
 	irq_line_low( ss.irq );
 	UNLOCK;
@@ -357,20 +349,13 @@ stop_sound( void )
 static int
 start_sound( void ) 
 {
-	pid_t pid = getpid();
-
 	if( ss.started || !ss.format )
 		return -1;
 	ss.started = 1;
 
-	/* printm("- start -\n"); ss.debug_tbl = get_tbl(); */
-
 	LOCK;
 	ss.ringind = 0;
 	ss.dbuf_go = 0;
-
-	ss.save_priority = getpriority( PRIO_PROCESS, pid );
-	/* setpriority( PRIO_PROCESS, pid, -12 ); */
 
 	if( ss.thread_running ) {
 		/* jump start already running thread */
@@ -507,8 +492,6 @@ osip_sound_write( int sel, int *params )
 	ss.dbuf_srcsize = len;
 	ss.dbuf_go = 1;
 
-	/* printm("WRITE %ld (%d bytes)\n", get_tbl() - ss.debug_tbl, len ); ss.debug_tbl = get_tbl(); */
-	
 	return 0;
 }
 

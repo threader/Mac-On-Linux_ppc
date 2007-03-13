@@ -18,6 +18,15 @@
 
 #include "sound_sh.h"
 
+#define SND_DEBUG 1
+#if SND_DEBUG
+#define DEBUG_SND \
+	if (0) {} else printm
+#else
+#define DEBUG_SND \
+	if (1) {} else printm
+#endif /* SND_DEBUG */
+
 typedef struct {
 	void	(*cleanup)( void );
 

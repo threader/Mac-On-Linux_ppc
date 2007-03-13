@@ -440,7 +440,7 @@ bdev_close_volume( bdev_desc_t *dev )
 static int
 blkdev_init( void )
 {
-	printm("\n");
+	printm("\nAvailable Disks:\n");
 	if( is_classic_boot() || is_osx_boot() ) {
 		setup_disks("blkdev_mol", kMacVolumes );
 		setup_disks("blkdev", kMacVolumes );

@@ -368,7 +368,7 @@ scsi_init( void )
 	}
 	register_osi_iface( osi_iface, sizeof(osi_iface) );
 
-	printm("SCSI devices:\n\n");
+	printm("SCSI devices:\n");
 
 	/* sg_scsi must be initialized first in order to avoid double exports */
 	sg_scsi_init();

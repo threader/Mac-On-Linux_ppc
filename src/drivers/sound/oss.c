@@ -196,6 +196,6 @@ oss_probe( int dummy_exact )
 		else
 			printm("OSS sound device unavailable (will be used anyway)\n");
 	}
-	printm("OSS sound driver\n");
+	printm("OSS sound driver loaded\n");
 	return &oss_driver_ops;
 }
