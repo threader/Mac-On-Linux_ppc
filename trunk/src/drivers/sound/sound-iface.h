@@ -18,7 +18,7 @@
 
 #include "sound_sh.h"
 
-#define SND_DEBUG 1
+#define SND_DEBUG 0
 #if SND_DEBUG
 #define DEBUG_SND \
 	if (0) {} else printm
