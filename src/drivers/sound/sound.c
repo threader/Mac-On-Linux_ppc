@@ -172,6 +172,7 @@ static void
 ring_engine( void )
 {
 	char *p;
+	DEBUG_SND("Ring Engine: Started\n");
 	
 	while( ss.thread_running > 0 ) {
 		p = ss.ringbuf + ss.ringind * ss.fragsize;
@@ -199,6 +200,7 @@ ring_engine( void )
 			abort_doze();
 		}
 	}
+	DEBUG_SND("Ring Engine: Stopped\n");
 }
 
 

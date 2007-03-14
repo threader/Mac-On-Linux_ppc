@@ -14,6 +14,7 @@
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_audio.h>
+#include <time.h>
 
 #include "mol_config.h"
 #include "sound-iface.h"
@@ -41,8 +42,6 @@ typedef struct {
 	int buf_used;
 	/* Audio Semaphore for access to the data */
 	SDL_mutex *buf_lock;
-
-
 } sdl_sound_info_t;
 
 static sdl_sound_info_t	s;
@@ -57,11 +56,11 @@ static sdl_sound_info_t	s;
  */
 static void sdl_sound_stream (void *arg, u8 *stream, int stream_len) {
 	int copy_amt;
-	SDL_LockMutex(s.buf_lock);
 	DEBUG_SND("Stream Length: %i\n", stream_len);
 	/* Write out 0's to the stream so we can mix it */
 	memset(stream, 0, stream_len);
 	/* If we've got data to push */
+	SDL_LockMutex(s.buf_lock);
 	if (s.buf_used > 0) {
 		copy_amt = (s.buf_used < stream_len) ? s.buf_used : stream_len;
 		/* Copy the data */
@@ -76,8 +75,7 @@ static void sdl_sound_stream (void *arg, u8 *stream, int stream_len) {
 	/* Otherwise, just write out silence */
 	else {
 		SDL_UnlockMutex(s.buf_lock);
-		memset(stream, 0, stream_len);
-		DEBUG_SND("Wrote: %i of silence\n", stream_len);
+		DEBUG_SND("SDL Sound: Wrote silence\n");
 	}
 }
 
@@ -218,15 +216,17 @@ static void sdl_sound_close (void) {
  * OSX writes in 2K chunks... 
  */
 static void sdl_sound_write (char *fragptr, int size) {
+	struct timespec t;
+	t.tv_sec = 0;
+	t.tv_nsec = 500;
+
 	DEBUG_SND("SDL Sound Write: %i bytes\n", size);
+	/* Check for overrun - we sleep until we can write into the buffer
+	 * otherwise, OSX just pumps us data and things don't work right */
+	while(s.buf_used + size > s.buf_sz)
+		nanosleep(&t, NULL);
+		
 	SDL_LockMutex(s.buf_lock);
-	/* Check for overrun */
-	if(s.buf_used + size > s.buf_sz) {
-		SDL_UnlockMutex(s.buf_lock);
-		printm("SDL Sound: Overrun detected, discarding data\n");	
-		return;
-	}
-	
 	/* Data fits in buffer */
 	memcpy(s.buf_tail, fragptr, size);
 	s.buf_used += size;
