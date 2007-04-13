@@ -29,7 +29,7 @@ CONFIG_OSS=n
 #
 # Network drivers
 #
-CONFIG_TUN=n
+# CONFIG_TUN is not set
 # CONFIG_TAP is not set
 CONFIG_SHEEP=n
 
