@@ -251,13 +251,13 @@ vinit( video_module_t *module )
 			skip = 0;
 
 		printm("  %c Mode %d: \"%s\": %dx%d %2d (%dx%d) %.2f Hz %04x %d %d\n",
-		       skip ? ' ' : '*', i, mm[i].name,
-		       mm[i].imageWidth, mm[i].imageHeight,
-		       mm[i].depth, mm[i].pixmapWidth, mm[i].pixmapHeight,
-		       mm[i].verticalRefresh,
-		       /*mm[i].viewportWidth, mm[i].viewportHeight, */
-		       mm[i].flags, mm[i].bytesPerScanline, mm[i].visualClass
-			);
+			skip ? ' ' : '*', mm[i].num, mm[i].name,
+			mm[i].imageWidth, mm[i].imageHeight,
+			mm[i].depth, mm[i].pixmapWidth, mm[i].pixmapHeight,
+			mm[i].verticalRefresh,
+			/*mm[i].viewportWidth, mm[i].viewportHeight, */
+			mm[i].flags, mm[i].bytesPerScanline, mm[i].visualClass
+		);
 
 		if( skip )
 			continue;
@@ -269,7 +269,7 @@ vinit( video_module_t *module )
 		m[n].h = mm[i].viewportHeight;
 		m[n].depth = mm[i].depth;
 		m[n].refresh = (mm[i].verticalRefresh * 65536) + 0.5;
-		m[n].module_data = (void*)i;
+               m[n].module_data = (void*)mm[i].num;
 		m[n].next = NULL;
 		if( n>0 )
 			m[n-1].next = &m[n];
