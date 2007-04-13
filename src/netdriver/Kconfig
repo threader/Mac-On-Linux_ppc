@@ -3,7 +3,7 @@ menu "Network drivers"
 
 config TUN
 	bool "Tun driver"
-	default y
+	default n
 	help
 	  Build the tun/tap kernel module 
 	  2.4 kernels only, 2.6 kernels please use the kernel version instead

@@ -1,4 +1,6 @@
 MOL Changelog
+2007-04-09 Joseph Sacco
+	* Remove TUN from defconfig (again)
 2007-04-07 Risto Suominen
 	* Fix XDGA off by one error
 2007-03-12 Joseph Jezak <josejx@gentoo.org>
