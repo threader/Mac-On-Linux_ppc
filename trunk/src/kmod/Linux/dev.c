@@ -73,7 +73,11 @@ find_physical_rom( int *base, int *size )
 	struct device_node *dn;
 	int len, *p;
 	
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)
 	if( !(dn=find_devices("boot-rom")) && !(dn=find_type_devices("rom")) )
+#else
+	if( !(dn=of_find_node_by_name(NULL, "boot-rom")) && !(dn=of_find_node_by_type(NULL, "rom")) )
+#endif
 		return 0;
 	do {
 		if( !(p=(int*)get_property(dn, "reg", &len)) || len != sizeof(int[2]) )
