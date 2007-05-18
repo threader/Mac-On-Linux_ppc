@@ -13,7 +13,7 @@
 include		../../config/Makefile.top 
 
 PROGRAMS		= mol-img
-mol-img-OBJS		= mol-img.o
+mol-img-OBJS		= mol-img.o mol-img-lib.o
 
 all-local:	
 	@ln -sf $(ODIR)/mol-img ./

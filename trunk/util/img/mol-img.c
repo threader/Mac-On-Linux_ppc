@@ -1,5 +1,5 @@
 /* Create mol disk images 
- * Copyright 2006 - Joseph Jezak
+ * Copyright 2006, 2007 - Joseph Jezak
  *
  * Based create routines on qemu's qemu-img
  * Copyright (c) 2003 Fabrice Bellard
@@ -23,97 +23,13 @@
  * THE SOFTWARE.
  */
 
-#define _LARGEFILE64_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <stdint.h>
-#include <sys/stat.h>
-#include "byteorder.h"
-#include <unistd.h>
 
-int create_qcow(int, int64_t);
-int create_raw(int, int64_t);
+#include "mol-img.h"
+
 void help(void);
-
-#define RAW_IMAGE 0
-#define QCOW_IMAGE 1
-
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
-
-#ifndef O_LARGEFILE
-#define O_LARGEFILE 0
-#endif
-
-/* QCOW defines from blk_qcow.h */
-typedef struct QCowHeader {
-    uint32_t magic;
-    uint32_t version;
-    uint64_t backing_file_offset;
-    uint32_t backing_file_size;
-    uint32_t mtime;
-    uint64_t size; /* in bytes */
-    uint8_t cluster_bits;
-    uint8_t l2_bits;
-    uint32_t crypt_method;
-    uint64_t l1_table_offset;
-} QCowHeader;
-
-#define QCOW_MAGIC (('Q' << 24) | ('F' << 16) | ('I' << 8) | 0xfb)
-#define QCOW_VERSION 1
-
-#define QCOW_CRYPT_NONE 0
-#define QCOW_CRYPT_AES  1
-
-#define QCOW_OFLAG_COMPRESSED (1LL << 63)
-
-/* Create empty qcow disk - size in bytes */
-int create_qcow(int fd, int64_t size) {
-	int header_size, l1_size, i, shift;
-	QCowHeader header;
-	uint64_t tmp;
-    
-	memset(&header, 0, sizeof(header));
-	header.magic = cpu_to_be32(QCOW_MAGIC);
-	header.version = cpu_to_be32(QCOW_VERSION);
-	header.size = cpu_to_be64(size);
-	header_size = sizeof(header);
-
-	/* no backing file */
-        header.cluster_bits = 12; /* 4 KB clusters */
-        header.l2_bits = 9; /* 4 KB L2 tables */
-
-	header_size = (header_size + 7) & ~7;
-	shift = header.cluster_bits + header.l2_bits;
-	l1_size = (size + (1LL << shift) - 1) >> shift;
-
-	header.l1_table_offset = cpu_to_be64(header_size);
-/* AES Stuff not yet implemented
-	if (flags) 
-		header.crypt_method = cpu_to_be32(QCOW_CRYPT_AES);
-	else
-*/
-	header.crypt_method = cpu_to_be32(QCOW_CRYPT_NONE);
-
-	/* write all the data */
-	write(fd, &header, sizeof(header));
-	lseek(fd, header_size, SEEK_SET);
-	tmp = 0;
-	for(i = 0;i < l1_size; i++) {
-		write(fd, &tmp, sizeof(tmp));
-	}
-	return 0;
-}
-
-/* Create empty raw disk - size in bytes */
-int create_raw(int fd, int64_t size) {
-	ftruncate(fd, size);
-	return 0;
-}
 
 void help(void) {
 	printf ("Usage: mol-img [options] output.img\n");
@@ -130,7 +46,7 @@ int main(int argc, char **argv) {
 	char file[256] = "mol.img";
 	/* Default to 512M */
 	int64_t size = 512 * 1024 * 1024;
-	int fd, len;
+	int len;
 	int64_t multiplier = 1;
 
 	/* Parse command line arguments */
@@ -176,19 +92,11 @@ int main(int argc, char **argv) {
 		help();
 	}
 	
-	/* Open the file */
-	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_LARGEFILE, 0644);
-	if (fd < 0)
-		exit(-1);
-
 	if (type == RAW_IMAGE)
-		create_raw(fd, size);
+		create_img_raw(file, size);
 	else if (type == QCOW_IMAGE)
-		create_qcow(fd, size);
+		create_img_qcow(file, size);
 	else
 		exit(-1);
-
-	close(fd);
-
 	exit(0);
 }
