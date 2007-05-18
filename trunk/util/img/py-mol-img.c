@@ -6,6 +6,8 @@
 #include <Python.h>
 #include "mol-img.h"
 
+#define MB		1024 * 1024
+
 /* Locally raised exceptions */
 static PyObject *MOLerror;
 #define onError(message) \
@@ -23,7 +25,7 @@ static PyObject * create_qcow(PyTypeObject *type, PyObject *args, PyObject *kwds
 	if (!PyArg_ParseTuple(args, "sl", file, &size))
 		return NULL;
 	
-	return Py_BuildValue("i", create_img_qcow(file, size));
+	return Py_BuildValue("i", create_img_qcow(file, size * MB));
 }
 
 /* Create a raw disk image */
@@ -34,7 +36,7 @@ static PyObject * create_raw(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	if (!PyArg_ParseTuple(args, "sl", file, &size))
 		return NULL;
 	
-	return Py_BuildValue("i", create_img_raw(file, size));
+	return Py_BuildValue("i", create_img_raw(file, size * MB));
 }
 
 /* Exported Methods */
