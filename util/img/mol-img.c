@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 	int type = QCOW_IMAGE;
 	char file[256] = "mol.img";
 	/* Default to 512M */
-	int64_t size = 512 * 1024 * 1024;
+	int64_t size = 512 * SIZE_MB;
 	int len;
 	int64_t multiplier = 1;
 
@@ -62,9 +62,9 @@ int main(int argc, char **argv) {
 			else if (!strncmp(argv[args], "--size",6)) {
 				len = strlen(argv[args] + 7);			
 				if (!strncmp(argv[args] + 6 + len, "M", 1))
-					multiplier = 1024 * 1024;		
+					multiplier = SIZE_MB;		
 				else if (!strncmp(argv[args] + 6 + len, "G", 1))
-					multiplier = 1024 * 1024 * 1024;
+					multiplier = SIZE_GB;
 				size = atoi(argv[args] + 7) * multiplier;
 			}
 			else if (!strncmp(argv[args], "--help",6)) {
