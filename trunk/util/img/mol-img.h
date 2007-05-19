@@ -37,4 +37,7 @@ int create_img_raw(char *, int64_t);
 #define RAW_IMAGE 0
 #define QCOW_IMAGE 1
 
+#define SIZE_MB			1024 * 1024
+#define SIZE_GB			1024 * 1024 * 1024
+
 #endif /* __MOL_IMG_H__ */
