@@ -15,7 +15,7 @@ static PyObject * create_qcow(PyObject *type, PyObject *args) {
 	char * file;
 	int size;
 
-	if (!PyArg_ParseTuple(args, "sl", file, &size))
+	if (!PyArg_ParseTuple(args, "sl", &file, &size))
 		return NULL;
 	
 	return Py_BuildValue("i", create_img_qcow(file, size * SIZE_MB));
@@ -26,7 +26,7 @@ static PyObject * create_raw(PyObject *type, PyObject *args) {
 	char * file;
 	int size;
 
-	if (!PyArg_ParseTuple(args, "sl", file, &size))
+	if (!PyArg_ParseTuple(args, "sl", &file, &size))
 		return NULL;
 	
 	return Py_BuildValue("i", create_img_raw(file, size * SIZE_MB));
