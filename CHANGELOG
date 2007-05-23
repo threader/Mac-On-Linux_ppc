@@ -1,4 +1,6 @@
 MOL Changelog
+2007-05-22 Joseph Jezak
+	* Fix bus frequency reporting
 2007-05-15 Joseph Jezak
 	* 2.6.22 kmod fixes
 2007-04-09 Joseph Sacco
