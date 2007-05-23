@@ -35,6 +35,7 @@ extern void	molcpu_arch_cleanup( void );
 extern void	molcpu_mainloop( void );
 
 extern ulong	get_cpu_frequency( void );
+extern ulong	get_bus_frequency( void );
 
 
 /************************************************************************/

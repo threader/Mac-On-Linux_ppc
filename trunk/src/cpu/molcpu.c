@@ -1036,13 +1036,13 @@ fix_cpu_node( void )
 	if( !(filename=get_str_res(ci->resname)) || !prom_import_node(par, filename) )
 		fatal("import of cpu device node '%s' [%s] failed", filename, ci->resname );
 
-	/* fix some CPU node properties. The bus frequency is usually 
-	 * four times the timebase (I believe this is true for all the CPUs
-	 * currently implemented). 
-	 */
 	tbase = get_timebase_frequency();
-	busf = tbase * 4;
+	busf = get_bus_frequency();
 	clockf = get_cpu_frequency();
+
+	/* If the bus frequency check returned 0, guess it's 4 * timebase
+	 * This is a valid guess for older G4s and lower */
+	if (busf == 0) busf = tbase * 4;
 
 	if( !(dn=prom_find_type("cpu")) )
 		fatal("CPU node missing");	/* should never occur */

@@ -18,6 +18,11 @@
 
 #include <sys/mman.h>
 #include <sys/time.h>
+
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/types.h>
+
 #include "molcpu.h"
 #include "version.h"
 #include "memory.h"
@@ -105,6 +110,56 @@ get_cpu_frequency( void )
 		clockf *= 1000000;
 	}
 	return clockf;
+}
+
+/* Tries to read the bus frequency from /proc/device-tree/cpus/<CPU>@0/bus-frequency
+ * Returns the frequency or 0 on error 
+ */
+ulong
+get_bus_frequency( void ) {
+	static ulong busf = 0;
+	int name_len;
+	char buf[80] = "/proc/device-tree/cpus/";
+	FILE *f;
+	DIR *d;
+	struct dirent *procdir;
+
+	if( !busf ) {
+		/* Open /proc/device-tree/cpus */
+		d = opendir(buf);
+		if ( d == NULL ) {
+			printm ("Warning: Unable to open %s\n",buf);
+			return 0;
+		}
+
+		/* Each directory is a cpu, find @0 */
+		while ( (procdir = readdir(d)) != NULL ) {
+			name_len = strlen(procdir->d_name);
+			if ( name_len > 2 &&
+			     (procdir->d_name)[name_len - 1] == '0' &&
+			     (procdir->d_name)[name_len - 2] == '@')
+			    	break;
+		}
+		closedir(d);
+
+		/* Open bus-frequency in that directory */
+		if (procdir != NULL) {
+			strncat(buf, procdir->d_name, 80);
+			strncat(buf, "/bus-frequency", 80);
+			f = fopen(buf, "r");
+			if ( f == NULL) {
+				printm ("Warning: Couldn't open the cpu device tree node!\n");
+				return 0;
+			}
+			fread(&busf, 4, 1, f); 
+			fclose(f);
+		}
+		else {
+			printm ("Warning: Couldn't find cpu in device tree!\n");
+			return 0;
+		}
+	}
+	return busf;
 }
 
 mol_kmod_info_t *

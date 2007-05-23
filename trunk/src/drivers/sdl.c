@@ -43,6 +43,7 @@ static int sdl_init (void) {
 }
 
 static void sdl_cleanup (void) {
+	SDL_Quit();
 	return;
 }
 
