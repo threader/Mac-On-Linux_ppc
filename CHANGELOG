@@ -1,4 +1,6 @@
 MOL Changelog
+2007-06-25 Robert Story
+	* Fix building on FC7 by adding missing headers
 2007-06-21 Andreas Schwab
 	* Additional fixes for find_physical_rom
 2007-05-22 Joseph Jezak
