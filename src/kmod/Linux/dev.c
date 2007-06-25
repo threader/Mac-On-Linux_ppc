@@ -72,25 +72,37 @@ find_physical_rom( int *base, int *size )
 #ifndef CONFIG_AMIGAONE
 	struct device_node *dn;
 	int len, *p;
+	int by_type = 0;
 	
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)
 	if( !(dn=find_devices("boot-rom")) && !(dn=find_type_devices("rom")) )
-#else
-	if( !(dn=of_find_node_by_name(NULL, "boot-rom")) && !(dn=of_find_node_by_type(NULL, "rom")) )
-#endif
 		return 0;
-	do {
-		if( !(p=(int*)get_property(dn, "reg", &len)) || len != sizeof(int[2]) )
+#else
+	if (! (dn = of_find_node_by_name(NULL, "boot-rom"))) {
+		by_type = 1;
+		if (! (dn = of_find_node_by_type(NULL, "rom")))
 			return 0;
+	}
+#endif	/* < Linux 2.6.21 */
+	do {
+		if( !(p=(int*)get_property(dn, "reg", &len)) || len != sizeof(int[2]) ) {
+			of_node_put(dn);
+			return 0;
+		}
 		if( (unsigned int)(0xfff00100 - p[0]) < (unsigned int)p[1] ) {
 			*base = p[0];
 			*size = p[1];
+			of_node_put(dn);
 			return 1;
 		}
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)
 		dn = dn->next;
+#else
+		dn = by_type ? of_find_node_by_type(dn, "rom") : 
+			of_find_node_by_name(dn, "boot-rom");
+#endif	/* < Linux 2.6.21 */
 	} while( dn );
-#endif
-
+#endif /* CONFIG_AMIGA_ONE */
 	return 0;
 }
 
