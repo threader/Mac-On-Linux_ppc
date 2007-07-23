@@ -5,6 +5,7 @@ MOL Changelog
 2007-07-23 Joseph Jezak
 	* Added PVRs for some more CPUs
 	* Stop the build on x86 to prevent bug reports
+	* Added some build stuff for ppc64 (don't get excited...)
 
 mol-0.9.72.1
 2007-06-25 Robert Story
