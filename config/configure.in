@@ -12,6 +12,14 @@ ARCH=`../stree/scripts/archname "$ARCH"`
 AC_CONFIG_HEADER(config.h:config.h.in)
 
 ######################################################################
+# Die if we're trying to build on x86
+######################################################################
+test "$ARCH" = x86 && { 
+   	AC_MSG_ERROR([Sorry, MOL only supports PowerPC processors]) 
+	exit 1;
+}
+
+######################################################################
 # Test whether -traditional-cpp should be used
 ######################################################################
 
