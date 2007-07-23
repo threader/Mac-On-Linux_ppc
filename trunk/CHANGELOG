@@ -1,5 +1,7 @@
 MOL Changelog
 
+2007-07-23 Joseph Sacco
+	* Mark 7448 as able to use Altivec
 2007-07-23 Joseph Jezak
 	* Added PVRs for some more CPUs
 	* Stop the build on x86 to prevent bug reports
