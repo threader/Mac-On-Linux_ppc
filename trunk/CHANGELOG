@@ -1,4 +1,10 @@
 MOL Changelog
+
+2007-07-23 Joseph Jezak
+	* Added PVRs for some more CPUs
+	* Stop the build on x86 to prevent bug reports
+
+mol-0.9.72.1
 2007-06-25 Robert Story
 	* Fix building on FC7 by adding missing headers
 2007-06-21 Andreas Schwab
