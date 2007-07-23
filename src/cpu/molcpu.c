@@ -188,9 +188,9 @@ static cpu_entry_t cpuinfo[] = {
 	{ 0x80010302,	0xffff0000,	0x0410c1bc,	1, ill_7455,	NULL,	"7455"	},
 	{ 0x80020101,	0xffff0000,	0,		1, NULL,	NULL,	"7447"	},
 	{ 0x80030101,	0xffff0000,	0,		1, NULL,	NULL,	"7447A" },
-	{ 0x80040202,	0xffff0000,	0,		0, NULL,	NULL,	"7448"	},
-	{ 0x00390202,	0xffff0000, 	0,		0, ill_970,	NULL,	"970"	},
-	{ 0x003C0300,	0xffff0000,	0,		0, ill_970,	NULL,	"970FX"	},
+	{ 0x80040202,	0xffff0000,	0,		1, NULL,	NULL,	"7448"	},
+	{ 0x00390202,	0xffff0000, 	0,		1, ill_970,	NULL,	"970"	},
+	{ 0x003C0300,	0xffff0000,	0,		1, ill_970,	NULL,	"970FX"	},
 	{ 0x00700501,	0xffff0000,	0,		0, ill_cell,	NULL,	"Cell"	},
 	{ 0,		0,		0,		0, NULL,	NULL, 	NULL	},
 };
