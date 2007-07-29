@@ -1,5 +1,7 @@
 MOL Changelog
 
+2007-07-29 Joseph Jezak
+	* Revert FC7 header fix, it's breaking on other distros
 2007-07-23 Joseph Sacco
 	* Mark 7448 as able to use Altivec
 2007-07-23 Joseph Jezak
