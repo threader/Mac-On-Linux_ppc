@@ -111,7 +111,9 @@ typedef struct mac_regs {			/* this struct is page aligned */
 
 #define NUM_MREGS_PAGES		((sizeof(mac_regs_t)+0xfff)/0x1000)
 
+#ifndef BIT
 #define	BIT(n)			(1U<<(31-(n)))	/* bit 0 is MSB */
+#endif
 
 #ifndef __KERNEL__
 extern mac_regs_t *mregs;

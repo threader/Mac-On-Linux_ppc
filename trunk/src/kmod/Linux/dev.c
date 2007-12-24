@@ -85,7 +85,11 @@ find_physical_rom( int *base, int *size )
 	}
 #endif	/* < Linux 2.6.21 */
 	do {
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,22)
+		if( !(p=(int*)of_get_property(dn, "reg", &len)) || len != sizeof(int[2]) ) {
+#else
 		if( !(p=(int*)get_property(dn, "reg", &len)) || len != sizeof(int[2]) ) {
+#endif
 			of_node_put(dn);
 			return 0;
 		}
