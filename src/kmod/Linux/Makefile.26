@@ -9,10 +9,12 @@ mol-objs	:= $(PERFOBJS_) _performance.o
 obj-m		:= _kuname.o mol.o 
 
 PERFOBJS	= $(addprefix $(obj)/, $(PERFOBJS_))
-MOL_ASMFLAGS	= $(CPPFLAGS) $(ASMFLAGS) $(INCLUDES) -D__ASSEMBLY__
+MOL_ASMFLAGS	= $(CPPFLAGS) $(ASMFLAGS) $(INCLUDES) -D__ASSEMBLY__ -D__KERNEL__
+K_FLAGS		= -Iinclude -include include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include \
+		  -I$(src) -I$(src)/../../../include $(INCLUDES) -D__KERNEL__
 
 ### This is ugly, but it should fix the issues people have building as a user
-T		= "/tmp"
+T		= $(src)
 
 $(obj)/_traps.o:	$(src)/asm_offsets.h $(src)/traps.S $(src)/*.S $(src)/*.h
 
@@ -28,7 +30,7 @@ $(obj)/traps.o: $(obj)/_traps.o
 $(obj)/_%.o: $(src)/%.S
 	@echo "  AS [x]   $@"
 	@rm -f $@ $@.s
-	@$(CPP) $(MOL_ASMFLAGS) $< | m4 -s > $@.m4
+	@$(CPP) $(M_INC) $(MOL_ASMFLAGS) $< | m4 -s > $@.m4
 	@ASFILTER="./asfilter" ; test -x $$ASFILTER || ASFILTER="tr ';' '\n'" ; \
 	cat $@.m4 | $$ASFILTER > $@.s
 	@$(AS) $@.s $(AS_FLAGS) -o $@
@@ -38,7 +40,7 @@ $(obj)/_%.o: $(src)/%.S
 $(src)/asm_offsets.h:	$(src)/archinclude.h $(src)/kernel_vars.h $(src)/mac_registers.h
 $(src)/asm_offsets.h:	$(src)/asm_offsets.c $(src)/asm_offsets.inc
 	@rm -f ${T}/tmp-offsets.c $@ ; cat $^ > ${T}/tmp-offsets.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) -I$(src) -Wall -S ${T}/tmp-offsets.c -o ${T}/tmp-offsets.s
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(K_FLAGS) -Wall -S ${T}/tmp-offsets.c -o ${T}/tmp-offsets.s
 	@echo "/* WARNING! Automatically generated from 'shared/asm_offsets.c' - DO NOT EDIT! */" > $@
 	@grep '^#' ${T}/tmp-offsets.s >> $@
 	@rm -f ${T}/tmp-offsets.*
