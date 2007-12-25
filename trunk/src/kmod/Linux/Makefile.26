@@ -9,9 +9,9 @@ mol-objs	:= $(PERFOBJS_) _performance.o
 obj-m		:= _kuname.o mol.o 
 
 PERFOBJS	= $(addprefix $(obj)/, $(PERFOBJS_))
-MOL_ASMFLAGS	= $(CPPFLAGS) $(ASMFLAGS) $(INCLUDES) -D__ASSEMBLY__ -D__KERNEL__
 K_FLAGS		= -Iinclude -include include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include \
 		  -I$(src) -I$(src)/../../../include $(INCLUDES) -D__KERNEL__
+MOL_ASMFLAGS	= $(CPPFLAGS) $(ASMFLAGS) $(K_FLAGS) -D__ASSEMBLY__
 
 ### This is ugly, but it should fix the issues people have building as a user
 T		= $(src)
