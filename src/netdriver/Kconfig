@@ -5,14 +5,8 @@ config TUN
 	bool "Tun driver"
 	default n
 	help
-	  Build the tun/tap kernel module 
-	  2.4 kernels only, 2.6 kernels please use the kernel version instead
-
-config TAP
-	bool "Ethertap driver"
-	default n
-	help
-	  Build the ethertap kernel module (obsolete - do not use)
+	  Build the tun kernel module 
+	  For 2.4 kernels only, 2.6 kernels please use the kernel version instead
 
 config SHEEP
 	bool "Sheep net driver"

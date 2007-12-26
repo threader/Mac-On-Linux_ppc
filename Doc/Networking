@@ -7,7 +7,6 @@ network drivers:
 
 	1. SheepNet driver
 	2. TUN driver
-	3. TAP driver
 
 By default MOL is configured to use the SheepNet driver for AppleTalk and the
 TUN driver for TCP/IP.
@@ -108,31 +107,3 @@ You can check whether the kernel has NAT support by giving the command
 	/sbin/iptables -t nat -L
 
 as root.
-
-
-1. TAP driver
-=============
-
-Note: The ethertap driver is considered obsolete; use tun instead.
-
-This driver works similar to the TUN driver above although MOL does not autoconfigure
-tap devices since they can be configured at boot (the tun device is only alive as
-long as MOL is running).
-
-The tap device can be setup by hand as follows:
-
-	/sbin/ifconfig tap0 192.168.1.0 netmask 255.255.255.0 arp
-	/sbin/iptables -t nat -s 192.168.1.0/24 -d ! 192.168.1.1
-			-A POSTROUTING -j MASQUERADE
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-
-The config line in /etc/mol/molrc.net should be:
-
-	netdev: tap0 -tap
-
-The MOL/MacOS side shoule be configured as
-
-	IP:		192.168.1.2
-	Netmask:	255.255.255.0
-	Gateway:	192.168.1.1
-	Nameserver:	whatever

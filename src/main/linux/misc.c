@@ -111,20 +111,19 @@ void
 load_mods( void )
 {
 	char *s, buf[80], script[256];
-	int i, sheep, tun, tap, allow_mismatch;
+	int i, sheep, tun, allow_mismatch;
 
 	allow_mismatch = (get_bool_res("allow_kver_mismatch") == 1);
 
-	sheep = tun = tap = 0;
+	sheep = tun = 0;
 	for( i=0 ; get_str_res_ind("netdev",i,0) ; i++ ) {
 		if( !(s=get_str_res_ind("netdev", i, 1)) )
 			continue;
 		sheep |= !!strstr( s, "sheep" );
-		tap |= !!strstr( s, "tap" );
 		tun |= !!strstr( s, "tun" );
 	}
 	sprintf( buf, "%d %s %s %s", allow_mismatch,
-		 sheep? "sheep" : "", tun? "tun" : "", tap? "tap" : "" );
+		 sheep? "sheep" : "", tun? "tun" : "" );
 #ifndef __MPC107__
 	strncpy0( script, get_libdir(), sizeof(script) );
 	strncat0( script, "/bin/modload", sizeof(script) );

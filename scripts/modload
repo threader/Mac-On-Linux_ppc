@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage: modload libpath allow_mismatch [tun] [tap] [sheep] 
+# Usage: modload libpath allow_mismatch [tun] [sheep] 
 #
 # BE CAREFUL! THIS SCRIPT IS INVOKED FROM A SETUID ROOT BINARY
 #
@@ -9,12 +9,10 @@ _MOL=1
 _EXACT=1
 echo $2 | grep -q sheep && _SHEEP=1
 echo $2 | grep -q tun && _TUN=1
-echo $2 | grep -q tap && _TAP=1
 echo $2 | grep -q ^1 && unset _EXACT
 
 grep -q 198 /proc/misc && unset _SHEEP
 grep -q 200 /proc/misc && unset _TUN
-grep -q 'tap[0-9]' /proc/net/dev && unset _TAP
 
 LOADED=`/sbin/lsmod | sed -e 's/\(^\w*\).*/\1/g'`
 for x in $LOADED ; do
@@ -171,6 +169,5 @@ mol_dev_check
 
 test "$_SHEEP" && { sheep_check && load_mod sheep "SheepNet" ; }
 test "$_TUN" && { tun_check && load_mod tun "tun driver" ; }
-test "$_TAP" && { load_mod ethertap "tap driver" ; }
 
 exit 0

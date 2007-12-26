@@ -42,7 +42,7 @@ tun_open( enet_iface_t *is )
 	if( !strlen(is->iface_name) )
 		strcpy( is->iface_name, "mol" );
 
-	/* allocate tun/tap device */ 
+	/* allocate tun device */ 
 	if( (fd=open("/dev/net/tun", O_RDWR | O_NONBLOCK)) < 0 ) {
 		perrorm("Failed to open /dev/net/tun");
 		return 1;

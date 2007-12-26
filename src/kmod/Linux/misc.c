@@ -27,6 +27,7 @@
 
 #define MMU	kv->mmu
 
+/* Is there a better way to share between User and Kernel? */
 kernel_vars_t *
 alloc_kvar_pages( void )
 {
@@ -49,6 +50,7 @@ alloc_kvar_pages( void )
 	return kv;
 }
 
+/* Releases the memory we allocated before */
 void
 free_kvar_pages( kernel_vars_t *kv )
 {

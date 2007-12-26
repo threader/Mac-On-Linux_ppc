@@ -35,9 +35,8 @@ of supervisor instructions and other things).
 
 src/netdriver
 -------------
-Kernel modules for MOL networking. The tun and ethertap
-modules are copies of the kernel ones (included for
-convenience).
+Kernel modules for MOL networking. The tun module is a copy of
+the kernel one (included for convenience).
 
 src/booter
 ----------
