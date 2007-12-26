@@ -20,12 +20,10 @@ setup-tree-common:
 	@ln -sf dir1/Makefile.$(LV) $(ODIR)/Makefile
 
 setup-tree-26: setup-tree-common
-	@for x in tun.c ethertap.c ; do \
-		ln -sf $(KERNEL_SOURCE)/drivers/net/$$x $(ODIR)/ || exit 1 ; \
-	done
+	ln -sf $(KERNEL_SOURCE)/drivers/net/tun.c $(ODIR)/ || exit 1 ; \
 
 setup-tree-24: setup-tree-common
-	@for x in tun.c ethertap.c if_tun.h ; do \
+	@for x in tun.c if_tun.h ; do \
 		ln -sf dir1/$$x $(ODIR)/ || exit 1 ; \
 	done
 
@@ -36,7 +34,7 @@ all-local: setup-tree-$(LV)
 		modules $(KILL_WARNING_$(LV))
 
 	@test -d $(MOD_DEST) || $(INSTALL) -d $(MOD_DEST)
-	@for x in tun ethertap sheep ; do \
+	@for x in tun sheep ; do \
 		[ -f $(ODIR)/$$x.$(MP) ] || continue ; \
 		$(NM) $(ODIR)/$$x.$(MP) | grep -q init_module || continue ; \
 		ln -f $(ODIR)/$$x.$(MP) $(MOD_DEST)/ || exit 1 ; \

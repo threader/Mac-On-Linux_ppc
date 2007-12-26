@@ -1,5 +1,7 @@
 MOL Changelog
 
+2007-12-25 Joseph Jezak
+	* Removed the ethertap driver
 2007-12-24 Joseph Jezak
 	* Build fixes for newer kernels
 	* Moved the tmp directory for tmp_offsets building

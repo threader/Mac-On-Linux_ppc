@@ -72,7 +72,6 @@ extern packet_driver_t	*g_packet_driver_list;
 
 /* initialization */
 extern void		init_tun( void );
-extern void		init_tap( void );
 extern void		init_sheep( void );
 
 #define DECLARE_PACKET_DRIVER( initname, pd ) \

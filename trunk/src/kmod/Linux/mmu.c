@@ -29,6 +29,8 @@ void		(*xx_store_pte_lowmem)( void );
 void		(*xx_store_pte_lowmem)( ulong *slot, int pte0, int pte1 );
 #endif
 
+
+/* Makes a copy of the mmu context for MOL */
 int
 arch_mmu_init( kernel_vars_t *kv )
 {

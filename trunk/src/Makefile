@@ -2,7 +2,7 @@
 include			../config/Makefile.top
 
 BUILD_MODS		:= y
-NETMODS			:= $(CONFIG_TUN)$(CONFIG_TAP)$(CONFIG_SHEEP)
+NETMODS			:= $(CONFIG_TUN)$(CONFIG_SHEEP)
 NETDRIVER		:= $(if $(LINUX),$(if $(NETMODS),$(BUILD_MODS)))
 
 SUBDIRS			= lib main drivers debugger cpu booter .

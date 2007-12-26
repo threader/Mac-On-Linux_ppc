@@ -80,7 +80,6 @@ initialize_drivers( void )
 {
 #ifdef __linux__
 	init_tun();
-	init_tap();
 	init_sheep();
 #endif
 #ifdef __darwin__

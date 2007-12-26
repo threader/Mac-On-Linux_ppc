@@ -3,7 +3,7 @@
 ######################################################################
 
 AC_INIT(../stree/src/main/main.c)
-#AC_INIT(mol, 0.9.71)
+#AC_INIT(mol, 0.9.73)
 #AC_CONFIG_SRCDIR(src/include/async.h)
 #AC_CONFIG_AUX_DIR(scripts/buildtools)
 
@@ -14,7 +14,7 @@ AC_CONFIG_HEADER(config.h:config.h.in)
 ######################################################################
 # Die if we're trying to build on x86
 ######################################################################
-test "$ARCH" = x86 && { 
+test "$ARCH" != ppc && test "$ARCH" != osx && {
    	AC_MSG_ERROR([Sorry, MOL only supports PowerPC processors]) 
 	exit 1;
 }

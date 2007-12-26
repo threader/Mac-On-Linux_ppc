@@ -46,19 +46,3 @@ ifeq ${boot_type} newworld oldworld {	# Configure for MacOS only
 #	tunconfig:     alternate_tunconfig_script
 
 netdev:		tun${session} -tun
-
-
-#------------------------------------------------------------------------------
-# Tap Driver (more or less obsolete)
-#------------------------------------------------------------------------------
-#
-#	This driver is similar to the tun driver. MOL does not automatically
-#	configure the tap0 network though.
-#
-#		netdev:		tap0 -tap
-#
-#	- AppleTalk will not work (easily) over a tap device
-#	- The tap0 interface must be configured (preferably at boot)
-#
-
-#netdev:		tap0 -tap
