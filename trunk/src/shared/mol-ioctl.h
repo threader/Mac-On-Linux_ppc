@@ -18,6 +18,9 @@
 #define _H_MOL_IOCTL
 
 #ifndef __ASSEMBLY__
+#ifdef __linux__
+#include <linux/ioctl.h>
+#endif	/* __linux__ */
 #include "mmutypes.h"
 
 typedef struct {
