@@ -14,7 +14,6 @@
  *   
  */
 
-#include <linux/ioctl.h>
 #include "archinclude.h"
 #include <linux/vmalloc.h>
 #include <linux/sched.h>
