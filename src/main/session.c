@@ -251,12 +251,18 @@ session_is_loaded( void )
 
 #if 1
 	lseek( sd.fd, 0, SEEK_SET );
-	read( sd.fd, &head, sizeof(head) );
+	if(read( sd.fd, &head, sizeof(head) ) != sizeof(head)) {
+		printm("*** Unable to read session file ***\n");
+		return;
+	}
 
 	head.magic = INVALID_MAGIC;
 
 	lseek( sd.fd, 0, SEEK_SET );
-	write( sd.fd, &head, sizeof(head) );
+	if(write( sd.fd, &head, sizeof(head) ) != sizeof(head)) {
+		printm("*** Unable to write session file ***\n");
+		return;
+	}
 #else
 	printm("*** should invalidate session file ***\n");
 #endif

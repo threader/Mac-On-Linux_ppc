@@ -1099,7 +1099,12 @@ import_node( const char *filename, mol_device_node_t *par )
 		return NULL;
 	}
 	
-	read( fd, (void*)buf, size );
+	if(read( fd, (void*)buf, size ) < size) {
+		free(buf);
+		close(fd);
+		return NULL;
+	}
+
 	buf[size]=0;
 	
 	rbuf = buf;
