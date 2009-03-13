@@ -345,6 +345,7 @@ put_td_data( ohci_td_t *td, char *src, int count )
 /*	debug 								*/
 /************************************************************************/
 
+#if 0
 static int __dbg
 dump_td_( int mphys )
 {
@@ -418,6 +419,7 @@ dump_ed( int mphys, int all )
 	if( ed.nexted && all )
 		dump_ed( ed.nexted, 1 );
 }
+#endif
 
 
 /************************************************************************/
