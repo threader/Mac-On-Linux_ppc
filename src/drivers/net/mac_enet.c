@@ -65,8 +65,8 @@ typedef struct {
 static int 		numifs;
 static mac_enet_t	enetif[MAX_ENET_IFS];
 
-static char			*bad_access_str = "mac_enet: Bad access\n";
-#define BAD_ACCESS_MSG()	printm( bad_access_str )
+static char			*bad_access_str = "mac_enet: Bad access";
+#define BAD_ACCESS_MSG()	printm( "%s\n", bad_access_str )
 #define BAD_ACCESS_CHECK(addr)	do { if( !addr ) { BAD_ACCESS_MSG() ; return -1; } } while(0)
 
 
