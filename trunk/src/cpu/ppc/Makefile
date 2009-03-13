@@ -2,7 +2,7 @@
 include			../../../config/Makefile.top
 
 XTARGETS		= ppc
-CFLAGS			+= -msoft-float
+#CFLAGS			+= -msoft-float
 INCLUDES		+= -I$(SDIR)
 
 ppc-OBJS		= $(obj-y)
