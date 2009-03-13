@@ -312,6 +312,19 @@ static int mstrlen( const char *str )
 	return i;
 }
 
+/************************************************************************
+ * Check functions for broken stdio include - FIXME
+ ************************************************************************/
+int __sprintf_chk (char *__restrict __s, int __flag, size_t __slen,
+     __const char *__restrict __format, ...) {
+	return 0;
+}
+
+int __snprintf_chk (char *__restrict __s, size_t __n, int __flag,
+      size_t __slen, __const char *__restrict __format, ...) {
+	return 0;
+}
+
 
 /************************************************************************/
 /*	print using OSI interface					*/
