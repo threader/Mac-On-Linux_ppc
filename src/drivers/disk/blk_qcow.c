@@ -273,7 +273,9 @@ static u64 get_cluster_offset(BDRVQCowState *s,
                 /* round to cluster size */
                 cluster_offset = (cluster_offset + s->cluster_size - 1) &
                     ~(s->cluster_size - 1);
-                ftruncate(s->fd, cluster_offset + s->cluster_size);
+		if(ftruncate(s->fd, cluster_offset + s->cluster_size)) 
+			return -1;
+
                 /* if encrypted, we must initialize the cluster
                    content which won't be written */
                 if (s->crypt_method &&

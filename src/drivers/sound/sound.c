@@ -541,13 +541,20 @@ startboing( void )
 	lseek( fd, 0, SEEK_SET );
 
 	if( (buf=malloc(len)) ) {
-		read( fd, buf, len );
+		if( read( fd, buf, len) != len ) {
+			printm("Could not read from '%s'", name);
+			free(buf);
+			close(fd);
+			return;
+		}
+			
 		ss.dbuf_src = buf;
 		ss.dbuf_srcsize = len;
 		ss.dbuf_go = 1;
 		ss.startboingbuf = buf;
 	}
 	close( fd );
+	free(buf);
 
 	set_mode( kSoundFormat_S16_BE | kSoundFormat_Stereo, 22050 );
 	start_sound();

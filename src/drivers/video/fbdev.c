@@ -283,7 +283,10 @@ setup_video_modes( void )
 						add_mode( &v, depth, rowbytes, page_offs, refresh );
 					}
 				}
-				fgets( buf, sizeof(buf), f );
+				if(fgets( buf, sizeof(buf),  f) == NULL) {
+					err = 1;
+					break;
+				}
 			}
 			if( err )
 				printm("Line %d in '%s' is malformed.\n", line, vmodes_file );

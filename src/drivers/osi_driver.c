@@ -109,8 +109,9 @@ prom_add_nwdriver( mol_device_node_t *dn, char *filename )
 		return 1;
 	}
 	lseek( fd, 0, SEEK_SET );
-	read( fd, ptr, size );
-	prom_add_property( dn, "driver,AAPL,MacOS,PowerPC", ptr, size );
+	if(read( fd, ptr, size ) == size) 
+		prom_add_property( dn, "driver,AAPL,MacOS,PowerPC", ptr, size );
+
 	free( ptr );
 	close( fd );
 

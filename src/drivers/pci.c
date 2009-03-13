@@ -304,7 +304,8 @@ map_rom( pci_device_t *dev, ulong base, int map )
 		return;
 
 	lseek( dev->rom_fd, 0, SEEK_SET );
-	read( dev->rom_fd, dev->rombuf, dev->rom_size );
+	if(read( dev->rom_fd, dev->rombuf, dev->rom_size ) != dev->rom_size) 
+		printm("Warning: Couldn't read from PCI ROM!\n");
 	
 	dev->mapped_rombase = base;
 	dev->rom_map_id = add_io_range( base, dev->rom_size, "PCI-ROM", 0, &rom_ops, dev );
