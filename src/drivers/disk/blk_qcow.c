@@ -34,7 +34,7 @@ static int decompress_cluster(BDRVQCowState *s, u64 cluster_offset);
 
 int qcow_open(int fd, bdev_desc_t *bdev) 
 {
-    int i, shift;
+    int len, i, shift;
     QCowHeader header;
     BDRVQCowState *s = NULL;
     // int len;
@@ -55,6 +55,7 @@ int qcow_open(int fd, bdev_desc_t *bdev)
     bdev->fd = fd;
     	
     s->fd = fd;
+    s->backing_hd = -1;
     
     lseek(s->fd, 0, SEEK_SET);
     if (read(s->fd, &header, sizeof(header)) != sizeof(header))
@@ -112,17 +113,26 @@ int qcow_open(int fd, bdev_desc_t *bdev)
     if (!s->cluster_data)
     s->cluster_cache_offset = -1;
     if (header.backing_file_offset != 0) {
-    	printm("Sorry backing files are not supported right now!\n");
-	goto fail;
-    	/*	
+        int not_used;
+        
         len = header.backing_file_size;
-        if (len > 1023)
-            len = 1023;
+        if (len > 1023) {
+    	    printm("backing filename too long!\n");
+    	    goto fail;
+        }
         lseek(s->fd, header.backing_file_offset, SEEK_SET);
         if (read(s->fd, s->backing_file, len) != len)
             goto fail;
         s->backing_file[len] = '\0';
-	*/
+        if (s->backing_file[0] != '/') {
+    	  printm("Sorry only absolute filename for backing file!\n");
+    	  goto fail;
+        }
+	/* FIXME it will leak backing_hd on error */
+        if( (s->backing_hd = disk_open(s->backing_file, 0, &not_used, 0)) < 0 ) {
+    	  printm("Can't open backing file!\n");
+    	  goto fail;
+        }
     }
     return 0;
 
@@ -135,7 +145,10 @@ int qcow_open(int fd, bdev_desc_t *bdev)
 	free(s->cluster_cache);
     if(s->cluster_data) 
 	free(s->cluster_data);
+#if 0
+    // close is done by caller
     close(s->fd);
+#endif    
     return -1;
 }
 
@@ -376,7 +389,14 @@ int qcow_read(bdev_desc_t *bdev, u8 * buf, int nb_bytes)
         if (n > nb_sectors)
             n = nb_sectors;
         if (!cluster_offset) {
-            memset(buf, 0, 512 * n);
+            if (s->backing_hd) {
+                /* read from the base image */
+  	        if (pread(s->backing_hd, buf, n * 512, sector_num *512) < 0)
+                    return -1;
+            } else {
+                memset(buf, 0, 512 * n);
+            }
+ 
         } else if (cluster_offset & QCOW_OFLAG_COMPRESSED) {
             if (decompress_cluster(s, cluster_offset) < 0)
                 return -1;
@@ -450,6 +470,7 @@ void qcow_close(bdev_desc_t *bdev)
     free(s->l2_cache);
     free(s->cluster_cache);
     free(s->cluster_data);
-    close(s->fd);
+    if (s->backing_hd != -1)
+        close(s->backing_hd);
     free(s);
 }

@@ -103,6 +103,8 @@ typedef struct BDRVQcowState {
     AES_KEY aes_encrypt_key;
     AES_KEY aes_decrypt_key;
     u64 seek_sector;    /* Current sector */
+    char backing_file[1024];
+    int  backing_hd;
 } BDRVQCowState;
 
 /* Private QCOW Struct, bdev is the argument */
