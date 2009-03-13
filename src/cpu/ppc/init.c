@@ -99,8 +99,10 @@ get_cpu_frequency( void )
 		/* If /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq 
 		 * exists, read the cpu speed from there instead */
 		if( (f=fopen("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", "ro")) ) {
-			fgets(buf, sizeof(buf), f);
-			clockf = strtol(buf, NULL, 10) / 1000;
+			if(fgets(buf, sizeof(buf), f) == 0)
+				clockf = strtol(buf, NULL, 10) / 1000;
+
+			fclose(f);
 		}
 
 		if( clockf < 30 || clockf > 4000 ) {
@@ -144,14 +146,18 @@ get_bus_frequency( void ) {
 
 		/* Open bus-frequency in that directory */
 		if (procdir != NULL) {
-			strncat(buf, procdir->d_name, 80);
-			strncat(buf, "/bus-frequency", 80);
+			strncat(buf, procdir->d_name, 79);
+			strncat(buf, "/bus-frequency", 79);
 			f = fopen(buf, "r");
 			if ( f == NULL) {
 				printm ("Warning: Couldn't open the cpu device tree node!\n");
 				return 0;
 			}
-			fread(&busf, 4, 1, f); 
+			if (fread(&busf, 4, 1, f) != 1) {
+				printm ("Warning: Couldn't read from the cpu device tree node!\n");
+				fclose(f);
+				return 0;
+			}
 			fclose(f);
 		}
 		else {
