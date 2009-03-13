@@ -11,8 +11,7 @@ molrcget-TARGET		= $(molbin)/molrcget
 INCLUDES		+= -DMOL_DATA_DIR=\"$(datadir)\" -DMOL_ETC_DIR=\"$(etcdir)\" \
 			   -DMOL_VAR_DIR=\"$(vardir)\" -DMOL_LIB_DIR=\"$(libdir)\"
 
-CFLAGS			+= -msoft-float
-
+#CFLAGS			+= -msoft-float
 molrcget-OBJS		= res_manager.o molrcget.o ../lib/libcommon.a
 
 res-OBJS		= res_manager.o
