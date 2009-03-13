@@ -354,7 +354,9 @@ async_cleanup( void )
 		wait_safe();
 
 		as.cancel_thread = 1;
-		write( as.ackpipe[1], &dummy_ch, 1 );
+		while ( write( as.ackpipe[1], &dummy_ch, 1 ) != 1 )
+			;;
+
 		while( as.cancel_thread )
 			nanosleep(&tv, NULL);
 	}
