@@ -31,6 +31,7 @@ static void
 tun_preconfigure( enet_iface_t *is )
 {
 	memcpy( is->c_macaddr, def_hw_addr, 6 );
+	is->c_macaddr[5] += g_session_id;
 }
 
 static int
