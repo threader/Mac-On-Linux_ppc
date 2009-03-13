@@ -33,7 +33,11 @@ print_btrace_sym( ulong addr, const char *sym_filename )
 	while( f && fscanf(f, "%lx %c ", &v, &ch) == 2 ) {
 		if( v <= addr ) {
 			v2 = v;
-			fscanf( f, "%79s\n", buf );
+			if(fscanf( f, "%79s\n", buf ) != 1) {
+				printm("Error reading from backtrace symbol\n");
+				fclose(f);
+				return;
+			}
 			continue;
 		}
 		if( buf[0] ) {
