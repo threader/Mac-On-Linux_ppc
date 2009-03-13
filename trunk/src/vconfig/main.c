@@ -173,8 +173,13 @@ cprintf_(const char *fmt,... )
 		return;
 
 	va_start( args, fmt );
-	if( (len=vsnprintf(buf, sizeof(buf), fmt, args)) > 0 )
-		write( console_fd, buf, len );		
+	if( (len=vsnprintf(buf, sizeof(buf), fmt, args)) > 0 ) {
+		if(write( console_fd, buf, len ) != len) {
+			printf("Unable to write to the console fd\n");
+			return;
+		}
+	}
+
 	va_end( args );
 }
 
@@ -182,7 +187,10 @@ static void
 crefresh( void ) 
 {
 	cprintf_("\33[H\33[2J" );
-	write( console_fd, cbuf.buf, strlen(cbuf.buf) );
+	if(write( console_fd, cbuf.buf, strlen(cbuf.buf) ) != strlen(cbuf.buf)) {
+		printf("Unable to write to the console fd\n");
+		return;
+	}
 }
 
 static void
@@ -240,7 +248,10 @@ cprintf(const char *fmt,... )
 		cbuf.nlines += lines;
 
 		strcpy( cbuf.buf + newoffs, buf );
-		write( console_fd, cbuf.buf + newoffs, strlen( cbuf.buf + newoffs) );
+		if(write(console_fd, cbuf.buf + newoffs, strlen(cbuf.buf + newoffs)) != strlen(cbuf.buf + newoffs)) {
+			printf("Error writing to console fd!\n");
+			exit(1);
+		}
 	}
 	va_end( args );
 }
