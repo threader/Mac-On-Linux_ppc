@@ -507,7 +507,7 @@ print_menu_( mtab_t *t, int offs, int active )
 				modified = 1;
 		}
 		tc.h = offs;
-		sprintf( buf, "%s  %-20s <0>%s \n", 
+		snprintf( buf, 200, "%s  %-20s <0>%s \n", 
 			 (t->cur == i)? active ? "<5>" : "<4>"  : "<3>", m->text, 
 			 modified ? "<0>  Modified" : "" );
 		draw_str( buf );
