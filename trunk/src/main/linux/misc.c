@@ -122,8 +122,8 @@ load_mods( void )
 		sheep |= !!strstr( s, "sheep" );
 		tun |= !!strstr( s, "tun" );
 	}
-	sprintf( buf, "%d %s %s %s", allow_mismatch,
-		 sheep? "sheep" : "", tun? "tun" : "" );
+	sprintf( buf, "%d %s %s", allow_mismatch,
+		 sheep ? "sheep" : "", tun? "tun" : "" );
 #ifndef __MPC107__
 	strncpy0( script, get_libdir(), sizeof(script) );
 	strncat0( script, "/bin/modload", sizeof(script) );
