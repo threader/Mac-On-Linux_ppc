@@ -96,17 +96,17 @@ typedef struct inst_info {
 #define OFFS(x)		offsetof( mac_regs_t, x )
 
 #define inst_lis_alg( dr, addr ) \
-	((15*BIT(5)) + (BIT(10)*dr) + hi_alg(addr))
+	((15*MOL_BIT(5)) + (MOL_BIT(10)*dr) + hi_alg(addr))
 #define inst_lis_log( dr, addr ) \
-	((15*BIT(5)) + (BIT(10)*dr) + (((ulong)addr)>>16))
+	((15*MOL_BIT(5)) + (MOL_BIT(10)*dr) + (((ulong)addr)>>16))
 #define inst_ori( dr, sr, addr)	\
-	((24*BIT(5)) + (BIT(10)*sr) + (BIT(15)*dr) + ((addr) & 0xffff))
+	((24*MOL_BIT(5)) + (MOL_BIT(10)*sr) + (MOL_BIT(15)*dr) + ((addr) & 0xffff))
 #define inst_lwz( dr, sr, addr) \
-	((32*BIT(5)) + (BIT(10)*dr) + (BIT(15)*sr) + ((addr) & 0xffff))
+	((32*MOL_BIT(5)) + (MOL_BIT(10)*dr) + (MOL_BIT(15)*sr) + ((addr) & 0xffff))
 #define inst_b( from, to ) \
-	((18*BIT(5)) + ((((ulong)(to)-(ulong)(from)) & 0x03fffffc)))
+	((18*MOL_BIT(5)) + ((((ulong)(to)-(ulong)(from)) & 0x03fffffc)))
 #define inst_lwzx( dr, ar, br) \
-	((31*BIT(5)) + (BIT(10)*dr) + (BIT(15)*ar) + (BIT(20)*br) + (23 << 1))
+	((31*MOL_BIT(5)) + (MOL_BIT(10)*dr) + (MOL_BIT(15)*ar) + (MOL_BIT(20)*br) + (23 << 1))
 
 static ulong
 hi_alg( ulong addr )

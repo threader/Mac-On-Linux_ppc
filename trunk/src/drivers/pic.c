@@ -121,7 +121,7 @@ pic_io_write( ulong addr, ulong data_le, int len, void *usr )
 		break;
 	case r_ack:
 		/* ACK of the highest bit (at least in R1) clears both event register. */
-		if( data & BIT(0) ) {
+		if( data & MOL_BIT(0) ) {
 			R1.event = 0;
 			R2.event = 0;
 		} else {

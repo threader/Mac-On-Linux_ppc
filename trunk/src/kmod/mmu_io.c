@@ -129,13 +129,13 @@ bat_align( int flags, ulong ea, ulong lphys, ulong size, ulong bat[2] )
 	bat[1] = (lphys & ~(s-1)) | 2;	/* pp=10, R/W */
 
 #ifndef CONFIG_AMIGAONE
-	bat[1] |= BIT(27);		/* [M] (memory coherence) */
+	bat[1] |= MOL_BIT(27);		/* [M] (memory coherence) */
 #endif
 
 	if( !(flags & MAPPING_FORCE_CACHE) ) {
-		bat[1] |= BIT(26);	/* [I] (inhibit cache) */
+		bat[1] |= MOL_BIT(26);	/* [I] (inhibit cache) */
 	} else {
-		bat[1] |= BIT(25);	/* [W] (write through) */
+		bat[1] |= MOL_BIT(25);	/* [W] (write through) */
 	}
 	return 0;
 }

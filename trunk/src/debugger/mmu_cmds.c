@@ -685,7 +685,7 @@ lookup_mpte( ulong vsid, ulong ea )
 	pteg = ((phash & mask) << 6);
 
 	/* construct compare word */
-	cmp = BIT(0) | (vsid <<7) | ((ea&0x0fffffff)>>22);
+	cmp = MOL_BIT(0) | (vsid <<7) | ((ea&0x0fffffff)>>22);
 
 	/* look in primary PTEG */
 	p=(ulong*)((ulong)hash_base + pteg);
@@ -695,7 +695,7 @@ lookup_mpte( ulong vsid, ulong ea )
 				
 	/* look in secondary PTEG */
 	p = (ulong*)( (ulong)hash_base + (pteg ^ (mask << 6)) );
-	cmp |= BIT(25);
+	cmp |= MOL_BIT(25);
 
 	for( i=0; i<8; i++,p+=2 )
 		if( cmp == *p )

@@ -45,10 +45,10 @@ struct pterec {
 	uint		pent;			/* defined below */
 };
 
-#define PENT_LV_HEAD	BIT(0)			/* Resident - do not put on free list */
-#define PENT_UNUSED	BIT(1)			/* (lvhead) PTE index is not valid */
-#define PENT_EA_BIT14	BIT(2)			/* for the partial ea used by tlbie */
-#define PENT_EA_LAST	BIT(3)			/* next entry is the pelist pointer */
+#define PENT_LV_HEAD	MOL_BIT(0)			/* Resident - do not put on free list */
+#define PENT_UNUSED	MOL_BIT(1)			/* (lvhead) PTE index is not valid */
+#define PENT_EA_BIT14	MOL_BIT(2)			/* for the partial ea used by tlbie */
+#define PENT_EA_LAST	MOL_BIT(3)			/* next entry is the pelist pointer */
 #define PENT_TOPEA_MASK	0x0f800000		/* bit 4-8 of ea */
 #define PENT_SV_BIT	0x00400000		/* PTE uses vsid_sv */
 #define PENT_INDEX_MASK	0x003fffff		/* PTE index (there can be at most 2^22 PTEs) */
@@ -675,7 +675,7 @@ pte_inserted( kernel_vars_t *kv, ulong ea, char *lvptr, pte_lvrange_t *lvrange,
 
 		/* get_free_pent inserts the entry into the lvring and sets a few pent bits */
 		pr = get_free_pent(vi, lvrange, lvptr);
-		pr->pent |= PTE_TO_IND(pte) | pent_cmp | ((ea & BIT(14)) ? PENT_EA_BIT14 : 0);
+		pr->pent |= PTE_TO_IND(pte) | pent_cmp | ((ea & MOL_BIT(14)) ? PENT_EA_BIT14 : 0);
 
 		/* insert in (non-empty) ea ring */
 		pr->ea_next = *pp;
@@ -684,7 +684,7 @@ pte_inserted( kernel_vars_t *kv, ulong ea, char *lvptr, pte_lvrange_t *lvrange,
 		/* ea ring was empty */
 		pr = *pp = get_free_pent(vi, lvrange, lvptr);
 		pr->pent |= PENT_EA_LAST | PTE_TO_IND(pte) | pent_cmp
-				| ((ea & BIT(14)) ? PENT_EA_BIT14 : 0);
+				| ((ea & MOL_BIT(14)) ? PENT_EA_BIT14 : 0);
 		pr->ea_next = (pterec_t*)pp;
 	}
  out:

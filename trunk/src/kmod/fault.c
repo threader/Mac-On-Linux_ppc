@@ -31,10 +31,10 @@
 #include "hash.h"
 
 /* exception bits (srr1/dsisr and a couple of mol defined bits) */
-#define		EBIT_PAGE_FAULT		BIT(1)		/* I/D, PTE missing */
-#define		EBIT_NO_EXEC		BIT(3)		/* I,   no-execute or guarded */
-#define		EBIT_PROT_VIOL		BIT(4)		/* I/D, protection violation */
-#define		EBIT_IS_WRITE		BIT(6)		/* D    */
+#define		EBIT_PAGE_FAULT		MOL_BIT(1)		/* I/D, PTE missing */
+#define		EBIT_NO_EXEC		MOL_BIT(3)		/* I,   no-execute or guarded */
+#define		EBIT_PROT_VIOL		MOL_BIT(4)		/* I/D, protection violation */
+#define		EBIT_IS_WRITE		MOL_BIT(6)		/* D    */
 #define		EBIT_IS_DSI		1		/* D,   virtual bit */
 #define		EBIT_USE_MMU		2		/* I/D, virtual bit */
 
@@ -135,7 +135,7 @@ lookup_603_pte( kernel_vars_t *kv, ulong vsid, ulong ea, int is_dsi, mPTE_t **re
 	MREGS.spr[S_HASH2] = MMU.hash_mbase + (pteg ^ (mask << 6));
 
 	/* construct compare word */
-	cmp = BIT(0) | (vsid <<7) | (cmp_ea >> 22);
+	cmp = MOL_BIT(0) | (vsid <<7) | (cmp_ea >> 22);
 	if( is_dsi ) {
 		MREGS.spr[S_DCMP] = cmp;
 		MREGS.spr[S_DMISS] = ea;
@@ -167,7 +167,7 @@ lookup_mac_pte( kernel_vars_t *kv, ulong vsid, ulong ea )
 	pteg = ((phash & mask) << 6);
 
 	/* construct compare word */
-	cmp = BIT(0) | (vsid <<7) | ((ea&0x0fffffff)>>22);
+	cmp = MOL_BIT(0) | (vsid <<7) | ((ea&0x0fffffff)>>22);
 
 	/* look in primary PTEG */
 	p = (ulong*)((ulong)MMU.hash_base + pteg);
@@ -177,7 +177,7 @@ lookup_mac_pte( kernel_vars_t *kv, ulong vsid, ulong ea )
 				
 	/* look in secondary PTEG */
 	p = (ulong*)( (ulong)MMU.hash_base + (pteg ^ (mask << 6)) );
-	cmp |= BIT(25);
+	cmp |= MOL_BIT(25);
 
 	for( i=0; i<8; i++,p+=2 )
 		if( cmp == *p )
@@ -300,7 +300,7 @@ find_pte_slot( ulong ea, ulong *pte0, int pte_present, int *pte_replaced )
      
 		/* look in secondary PTEG */
 		p = secondary;
-		cmp |= BIT(25);
+		cmp |= MOL_BIT(25);
 		for( i=0; i<8; i++, p+=2 )
 			if( cmp == *p ) {
 				*pte0 |= PTE0_H;
@@ -314,12 +314,12 @@ find_pte_slot( ulong ea, ulong *pte0, int pte_present, int *pte_replaced )
 	
 	/* free slot in primary PTEG? */
 	for( p=primary, i=0; i<8; i++, p+=2 )
-		if( !(*p & BIT(0)) )
+		if( !(*p & MOL_BIT(0)) )
 			return p;
 
 	/* free slot in secondary PTEG? */
 	for( p=secondary, i=0; i<8; i++, p+=2 )
-		if( !(*p & BIT(0)) ) {
+		if( !(*p & MOL_BIT(0)) ) {
 			*pte0 |= PTE0_H;
 			return p;
 		}

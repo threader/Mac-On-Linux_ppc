@@ -317,7 +317,7 @@ rvec_altivec_trap( int dummy_rvec )
 {
 	if( mregs->no_altivec ) {
 		printm("AltiVec is disabled\n");
-		mac_exception( 0x700, BIT(12) );
+		mac_exception( 0x700, MOL_BIT(12) );
 	} else {
 		mac_exception( 0xf20, 0 );
 	}
@@ -375,7 +375,7 @@ static int
 rvec_imiss_trap( int dummy_rvec )
 {
 	/* printm("IMISS trap\n"); */
-	exception_603( 0x1000, BIT(13) );
+	exception_603( 0x1000, MOL_BIT(13) );
 	return 0;
 }
 
@@ -391,7 +391,7 @@ static int
 rvec_dmiss_store_trap( int dummy_rvec )
 {
 	/* printm("DMISS store trap\n"); */
-	exception_603( 0x1200, BIT(15) );
+	exception_603( 0x1200, MOL_BIT(15) );
 	return 0;
 }
 
@@ -408,7 +408,7 @@ rvec_msr_pow( int dummy_rvec )
 	mregs->msr &= ~MSR_POW;
 #endif
 	if( (mregs->processor >= 8 || mregs->processor == 3) 
-	    && (mregs->spr[S_HID0] & (BIT(8)|BIT(9)|BIT(10))) )
+	    && (mregs->spr[S_HID0] & (MOL_BIT(8)|MOL_BIT(9)|MOL_BIT(10))) )
 		doze();
 	return 0;
 }
@@ -445,7 +445,7 @@ rvec_priv_inst( int dummy_rvec, ulong inst )
 		stop_emulation();
 		break;
 	}
-	mac_exception( 0x700, BIT(13) );
+	mac_exception( 0x700, MOL_BIT(13) );
 	return 0;
 }
 
@@ -466,7 +466,7 @@ rvec_illegal_inst( int dummy_rvec, ulong inst )
 	}
 
 	/* printm("ILLEGAL INSTRUCTION %08lX\n", inst ); */
-	mac_exception( 0x700, BIT(12) );
+	mac_exception( 0x700, MOL_BIT(12) );
 	return 0;
 }
 
@@ -529,14 +529,14 @@ rvec_spr_write( int dummy_rvec, int sprnum, ulong value )
 		fix_thrm_spr();
 		break;
 	case S_MSSCR0:
-		value &= ~BIT(8);			/* 7400 DL1HWF, L1 data cache hw flush */
+		value &= ~MOL_BIT(8);			/* 7400 DL1HWF, L1 data cache hw flush */
 		break;
 	case S_L2CR:					/* L2 Cache Control Register */
 		/* 750 doesn't clear L2I but 7455 does */
-		value &= ~(BIT(10) | BIT(31));		/* Clear L2I and L2IP */
+		value &= ~(MOL_BIT(10) | MOL_BIT(31));		/* Clear L2I and L2IP */
 		break;
 	case S_L3CR:					/* L3 Cache Control Register */
-		value &= ~(BIT(20) | BIT(21));		/* Clear L3HWF and L3I */	
+		value &= ~(MOL_BIT(20) | MOL_BIT(21));		/* Clear L3HWF and L3I */	
 		mregs->spr[sprnum] = value;
 		break;
 	default:

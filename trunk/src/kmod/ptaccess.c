@@ -39,7 +39,7 @@ do_intercept_tlbie( kernel_vars_t *kv, ulong pte0, ulong pte1, ulong pteoffs )
 		clear_bit_mol( pteoffs >> 3, MMU.pthash_inuse_bits );
 	
 	v = (pteoffs >> 6);
-	if( pte0 & BIT(25) )	/* secondary hash? */
+	if( pte0 & MOL_BIT(25) )	/* secondary hash? */
 		v = ~v;
 	v ^= (pte0 >> 7);
 	v = ((pte0 << 10) & 0xfc00) | (v & 0x3ff);
@@ -93,7 +93,7 @@ do_tlbli( kernel_vars_t *kv, ulong ea )
 	mPTE_t *p;
 	
 	//printk("do_tlbli %08lX : %08lX %08lX\n", ea, MREGS.spr[S_ICMP], MREGS.spr[S_RPA] );
-	if( MREGS.spr[S_SRR1] & BIT(14) )
+	if( MREGS.spr[S_SRR1] & MOL_BIT(14) )
 		ind += 32;
 
 	p = &MMU.ptes_i_603[ind];
@@ -114,7 +114,7 @@ do_tlbld( kernel_vars_t *kv, ulong ea )
 
 	//printk("do_tlbld %08lX\n", ea );
 
-	if( MREGS.spr[S_SRR1] & BIT(14) )
+	if( MREGS.spr[S_SRR1] & MOL_BIT(14) )
 		ind += 32;
 
 	p = &MMU.ptes_d_603[ind];

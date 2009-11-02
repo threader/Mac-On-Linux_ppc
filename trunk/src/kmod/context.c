@@ -37,9 +37,9 @@ flush_all_PTEs( kernel_vars_t *kv )
 
 	for( pte=ptehash.base, i=0; i<npte; i++, pte+=2 ) {
 		v = *pte;
-		if( !(v & BIT(0)) )	/* test V-bit */
+		if( !(v & MOL_BIT(0)) )	/* test V-bit */
 			continue;
-		v = (v & ~BIT(0)) >> 7;
+		v = (v & ~MOL_BIT(0)) >> 7;
 		v = (v - ((v & 0xf) * MUNGE_ESID_ADD)) * MUNGE_MUL_INVERSE;
 		v = (v>>4) & CTX_MASK;
 

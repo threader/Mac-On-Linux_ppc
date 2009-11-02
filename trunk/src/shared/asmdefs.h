@@ -391,7 +391,7 @@ MACRO(ori_, [reg1, reg2, value], [
 #define EXTERN( name )		_##name
 #endif	
 
-#define	BIT(n)		(1<<(31-(n)))
+#define	MOL_BIT(n)		(1<<(31-(n)))
 
 #endif   /* _H_ASMDEFS */
 

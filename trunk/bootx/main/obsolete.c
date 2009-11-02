@@ -207,7 +207,7 @@ field_to_bit( ulong mask, ulong inst, int ignore_zero )
 		mask = mask >> 1 ;
 		dr = dr >> 1;
 	}
-	return BIT(dr);
+	return MOL_BIT(dr);
 }
 
 
@@ -223,7 +223,7 @@ find_free_reg_( ulong inst, ulong *src_regs, ulong *dest_regs )
 		
 		// opcode matching
 		if( (p->flags & HAS_OE) )
-			sec &= ~BIT(22);
+			sec &= ~MOL_BIT(22);
 		if( p->prim_opc != prim || (p->sec_opc >=0 && p->sec_opc != sec) )
 			continue;
 		if( ((p->f1 & Fz) && B1(inst)) || ((p->f2 & Fz) && B2(inst)) || ((p->f3 & Fz) && B3(inst)) )
@@ -260,7 +260,7 @@ find_free_reg( ulong *p, int dr )
 {
 	int i, j;
 	ulong dreg=0;
-	ulong sreg=BIT(dr);
+	ulong sreg=MOL_BIT(dr);
 	
 	for( i=0; i<20; i++, p++ ) {
 		if( find_free_reg_( *p, &sreg, &dreg ))
@@ -268,7 +268,7 @@ find_free_reg( ulong *p, int dr )
 		if( dreg & ~sreg ) {
 //			printm("Found register %08lX %08lx\n", dreg, sreg );
 			for( j=0; j<32; j++ )
-				if( dreg & ~sreg & BIT(j) )
+				if( dreg & ~sreg & MOL_BIT(j) )
 					return j;
 			printm("internal error\n");
 			return -1;
