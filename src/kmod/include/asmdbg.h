@@ -124,7 +124,7 @@ MACRO(PERF_MONITOR_GET, [
 	lwz	r5,xDEBUG_SCR1(r1)
 ])
 MACRO(PERF_MONITOR_SETUP, [scr], [
-	LOADI	_scr,BIT(2) | BIT(3) | BIT(31)	// count in SV-mode if PM is zero.
+	LOADI	_scr,MOL_BIT(2) | MOL_BIT(3) | MOL_BIT(31)	// count in SV-mode if PM is zero.
 	mtspr	S_MMCR0,_scr
 	li	_scr,0
 	mtspr	S_MMCR1,_scr

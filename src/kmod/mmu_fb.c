@@ -160,7 +160,7 @@ get_dirty_fb_lines( kernel_vars_t *kv, short *userbuf, int num_bytes )
 				p->slot = NULL;
 				p->dirty = 1;
 				__tlbie( p->ea );
-			} else if( p->slot[1] & BIT(24) ) {  /* C-BIT */
+			} else if( p->slot[1] & MOL_BIT(24) ) {  /* C-BIT */
 				p->dirty = 1;
 				__store_PTE( p->ea, p->slot, p->pte0, p->pte1 );
 				BUMP(fb_ptec_flush);

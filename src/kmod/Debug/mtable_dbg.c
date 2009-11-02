@@ -45,7 +45,7 @@ extern void		clear_vsid_refs( kernel_vars_t *kv );
 ulong 			*hw_hash_base;
 ulong 			hw_pte_offs_mask;
 
-#define BIT(n)		(1U<<(31-(n)))
+#define MOL_BIT(n)		(1U<<(31-(n)))
 
 static inline void __tlbie( ulong ea ) {
 	/* printk("tlbie %08lX\n", ea ); */

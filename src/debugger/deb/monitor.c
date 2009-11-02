@@ -546,9 +546,9 @@ draw_reg_win( void )
 		}
 		mvwprintb( reg_win, 37, 2, "XER:** %08lx",mregs->xer );
 		mvwprintb( reg_win, 38, 4, "%2s %2s %2s", 
-			   (mregs->xer & BIT(0)) ? "SO" : "",
-			   (mregs->xer & BIT(1)) ? "SV" : "",
-			   (mregs->xer & BIT(2)) ? "CA" : "" );
+			   (mregs->xer & MOL_BIT(0)) ? "SO" : "",
+			   (mregs->xer & MOL_BIT(1)) ? "SV" : "",
+			   (mregs->xer & MOL_BIT(2)) ? "CA" : "" );
 	} else {
 		ulong sr;
 		/* m68k. NIP = r24-2 */
@@ -574,11 +574,11 @@ draw_reg_win( void )
 		/* low byte of r25 holds high byte of status register */
 		/* T1 T0 S M 0 I3 I2 I1 .... ? */
 		sr = (mregs->gpr[25] << 8) & 0xff00;
-		sr |= (mregs->cr & BIT(0) ) ? 0x8 : 0;	/* LT  (N, Negative) */
-		sr |= (mregs->cr & BIT(2) ) ? 0x4 : 0;	/* EQ  (Z, Zero) */
-		sr |= (mregs->xer & BIT(2) ) ? 0x1 : 0;	/* CA  (C, Carry) */
+		sr |= (mregs->cr & MOL_BIT(0) ) ? 0x8 : 0;	/* LT  (N, Negative) */
+		sr |= (mregs->cr & MOL_BIT(2) ) ? 0x4 : 0;	/* EQ  (Z, Zero) */
+		sr |= (mregs->xer & MOL_BIT(2) ) ? 0x1 : 0;	/* CA  (C, Carry) */
 		/* shold we get the SO bit from cr or XER? */
-		sr |= (mregs->cr & BIT(3) ) ? 0x2 : 0 ; /* SO  (V, Overflow) */
+		sr |= (mregs->cr & MOL_BIT(3) ) ? 0x2 : 0 ; /* SO  (V, Overflow) */
 		/* XXX: Extended bit X (0x10...) lookup in motorolas manual...*/
 
 		mvwprintb(reg_win, 21,2,"SR:** %04X",sr );
@@ -916,21 +916,21 @@ draw_spr_mode( void )
 		BIN4(tmp,12), BIN4(tmp,8), BIN4(tmp,4), BIN4(tmp,0)  );
 	wclrtoeol( data_win );
 	mvwprintb( data_win, y,2, " %2s %2s %2s %2s     %2s %3s %2s %2s",
-		   ( tmp & BIT(0) )? "LT" : "",
-		   ( tmp & BIT(1) )? "GT" : "",
-		   ( tmp & BIT(2) )? "EQ" : "",
-		   ( tmp & BIT(3) )? "SO" : "",
-		   ( tmp & BIT(4) )? "FX" : "",
-		   ( tmp & BIT(5) )? "FEX": "",
-		   ( tmp & BIT(6) )? "VX" : "",
-		   ( tmp & BIT(7) )? "OV" : "");
+		   ( tmp & MOL_BIT(0) )? "LT" : "",
+		   ( tmp & MOL_BIT(1) )? "GT" : "",
+		   ( tmp & MOL_BIT(2) )? "EQ" : "",
+		   ( tmp & MOL_BIT(3) )? "SO" : "",
+		   ( tmp & MOL_BIT(4) )? "FX" : "",
+		   ( tmp & MOL_BIT(5) )? "FEX": "",
+		   ( tmp & MOL_BIT(6) )? "VX" : "",
+		   ( tmp & MOL_BIT(7) )? "OV" : "");
 	y++;
 	mvwprintb( data_win, y, 2,  "XER:**   %08lx", mregs->xer);
 	tmp = mregs->xer;
 	mvwprintb( data_win, y, 20, "%-3d %2s %2s %2s", tmp & 0x7f,
-		   ( tmp & BIT(0) )? "SO" : "",
-		   ( tmp & BIT(1) )? "OV" : "",
-		   ( tmp & BIT(2) )? "CA" : "" );
+		   ( tmp & MOL_BIT(0) )? "SO" : "",
+		   ( tmp & MOL_BIT(1) )? "OV" : "",
+		   ( tmp & MOL_BIT(2) )? "CA" : "" );
 	y++;
 	mvwprintb( data_win, y, 2, "FPSCR:** %08lx", mregs->fpscr);
 	y++;
@@ -1058,7 +1058,7 @@ draw_altivec_mode( void )
 	y++;
 	for(i=0;i<32;i++) {
 		altivec_reg_t *v = &mregs->vec[i];
-		if( BIT(i) & mregs->spr[S_VRSAVE] )
+		if( MOL_BIT(i) & mregs->spr[S_VRSAVE] )
 			wattron( data_win, A_BOLD );
 		mvwprintw(data_win, i+4,2,"V%02d", i );
 		wattroff( data_win, A_BOLD );
@@ -1177,7 +1177,7 @@ is_endoffunc_inst( ulong inst )
 
 		switch( opc ) {
 		case 18: /* b (without link) */
-			if( inst & BIT(31) )
+			if( inst & MOL_BIT(31) )
 				return FALSE;
 			return TRUE;
 		}

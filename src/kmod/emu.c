@@ -60,7 +60,7 @@ do_mtsdr1( kernel_vars_t *kv, ulong value )
 	/* the mask must be a valid one; we hade better make sure we are
 	 * not tricked by a bogus sdr1 value
 	 */
-	for( mask=BIT(23); mask && !(mask & value) ; mask=mask>>1 )
+	for( mask=MOL_BIT(23); mask && !(mask & value) ; mask=mask>>1 )
 		;
 	mask = mask? ((mask | (mask-1)) << 16) | 0xffff : 0xffff;
 	mbase = value & ~mask;
