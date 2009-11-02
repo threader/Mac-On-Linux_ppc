@@ -65,7 +65,8 @@ setup-common: sanity-test make-relcheck
 
 all-local: setup-common
 	@$(DEPS_$(LV)) > /dev/null 2>&1 || ( echo "$(DEPS_$(LV))" ; $(DEPS_$(LV)) ; exit 1 ; )
-	@{ $(MAKE) --no-print-directory -C $(KERNEL_SOURCE) $(BUILD) || exit $$? ; } $(KILL_WARNING_$(LV))
+	# Replace the if [ blah ] with a mechanism to set the proper architecture independent of the build host.
+	@{ if [ $(ARCH) = "ppc" -o $(ARCH) = "ppc64" ]; then ARCH=powerpc; fi; $(MAKE) --no-print-directory -C $(KERNEL_SOURCE) $(BUILD) || exit $$? ; } $(KILL_WARNING_$(LV))
 	@$(BDIR)/checker.pl $(MOD_TARGET) || (echo "checker.pl failed" ; rm $(MOD_TARGET) ; exit 1)
 #	$(STRIP) -g build mol.o
 
