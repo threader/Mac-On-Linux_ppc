@@ -74,6 +74,7 @@ int create_img_qcow(char * file, int64_t size) {
 	int header_size, l1_size, i, shift, fd;
 	QCowHeader header;
 	uint64_t tmp;
+	int ret = -1;
 
 	/* Create the file */
 	fd = open(file, O_EXCL | O_NOFOLLOW | O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_LARGEFILE, 0644);
@@ -105,19 +106,29 @@ int create_img_qcow(char * file, int64_t size) {
 	header.crypt_method = cpu_to_be32(QCOW_CRYPT_NONE);
 
 	/* write all the data */
-	write(fd, &header, sizeof(header));
-	lseek(fd, header_size, SEEK_SET);
-	tmp = 0;
-	for(i = 0;i < l1_size; i++) {
-		write(fd, &tmp, sizeof(tmp));
+	if (write(fd, &header, sizeof(header)) == sizeof(header)) {
+		lseek(fd, header_size, SEEK_SET);
+		tmp = 0;
+		ret = 0;
+		for(i = 0;i < l1_size; i++) {
+			if (write(fd, &tmp, sizeof(tmp)) != sizeof(tmp)) {
+				ret = -1;
+				break;
+			}
+		}
+	}
+	if (ret == -1) {
+		printf("Unable to write the file: %s.\n", file);
 	}
 	close(fd);
-	return 0;
+	return ret;
 }
 
 /* Create empty raw disk - size in bytes */
 int create_img_raw(char * file, int64_t size) {
 	int fd;
+	int ret = 0;
+	
 	/* Create the file */
 	fd = open(file, O_EXCL | O_NOFOLLOW | O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | O_LARGEFILE, 0644);
 	if (fd < 0) {
@@ -125,7 +136,10 @@ int create_img_raw(char * file, int64_t size) {
 		return -1;
 	}
 
-	ftruncate(fd, size);
+	if (ftruncate(fd, size) < 0) {
+		printf("Unable to truncate the file: %s.\n", file);
+		ret = -1;
+	}
 	close(fd);
-	return 0;
+	return ret;
 }
