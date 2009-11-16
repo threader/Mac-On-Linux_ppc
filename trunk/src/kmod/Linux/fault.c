@@ -59,6 +59,10 @@ fix_pte( ulong *p, ulong set, ulong flags )
 #define PAGE_BITS_WRITE		(_PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_HASHPTE )
 #define PAGE_BITS_READ		(_PAGE_ACCESSED | _PAGE_HASHPTE )
 
+#ifndef FAULT_FLAG_WRITE
+#define FAULT_FLAG_WRITE 1
+#endif
+
 ulong 
 get_phys_page( kernel_vars_t *kv, ulong va, int request_rw )
 {
@@ -111,7 +115,7 @@ no_page:
 	if( !(vma->vm_flags & (request_rw ? VM_WRITE : (VM_READ | VM_EXEC))) )
 		goto bad_area;
 
-	handle_mm_fault( mm, vma, va, request_rw );
+	handle_mm_fault( mm, vma, va, request_rw?FAULT_FLAG_WRITE:0 );
 
 	up_read( &mm->mmap_sem );
 	return get_phys_page(kv, va, request_rw);
