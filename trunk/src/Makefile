@@ -1,7 +1,7 @@
 
 include			../config/Makefile.top
 
-BUILD_MODS		:= y
+BUILD_MODS		:= $(if $(CONFIG_MOL),y)
 NETMODS			:= $(CONFIG_TUN)$(CONFIG_SHEEP)
 NETDRIVER		:= $(if $(LINUX),$(if $(NETMODS),$(BUILD_MODS)))
 
