@@ -1,11 +1,16 @@
 mainmenu "Mac-on-Linux Configuration"
 
 menu "Machine Specific Build Targets"
-config PPC
-	bool
-	default y
+
+choice
+	prompt "Virtualization type"
+	default PPC
+
+config MOL
+	bool "MOL kernel module"
 	help
 	  No help yet.
+endchoice
 
 #config MPC107
 #	bool "MPC107 board (Crescendo)"
