@@ -33,6 +33,10 @@
 #include "osi_calls.h"
 #endif
 
+#ifdef CONFIG_KVM
+#include "kvm/kvm.h"
+#endif
+
 /* gRVECtable is also accessed by mainloop.S */
 priv_rvec_entry_t gRVECtable[NUM_RVECS];
 
@@ -160,12 +164,20 @@ static volatile int	__cpu_irq_raise;
 static void
 set_cpu_irq_private( int raise )
 {
+#ifdef CONFIG_KVM
+	if( raise ) {
+		kvm_trigger_irq();
+	} else {
+		kvm_untrigger_irq();
+	}
+#else
 	if( raise ) {
 		mregs->flag_bits |= fb_IRQPending;
 		if( mregs->msr & MSR_EE )
 			irq_exception();
 	} else
 		mregs->flag_bits &= ~fb_IRQPending;
+#endif
 }
 
 void
