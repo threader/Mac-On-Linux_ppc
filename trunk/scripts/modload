@@ -14,6 +14,8 @@ echo $2 | grep -q ^1 && unset _EXACT
 grep -q 198 /proc/misc && unset _SHEEP
 grep -q 200 /proc/misc && unset _TUN
 
+[ -e /dev/kvm ] && exit 0
+
 LOADED=`/sbin/lsmod | sed -e 's/\(^\w*\).*/\1/g'`
 for x in $LOADED ; do
     [ $x = "mol" ] && unset _MOL

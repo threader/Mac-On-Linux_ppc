@@ -10,6 +10,11 @@ config MOL
 	bool "MOL kernel module"
 	help
 	  No help yet.
+
+config KVM
+	bool "KVM kernel module"
+	help
+	  No help yet.
 endchoice
 
 #config MPC107

@@ -19,6 +19,9 @@
 #include "mac_registers.h"
 #include "loader.h"
 
+#ifdef CONFIG_KVM
+#include "../cpu/kvm/kvm.h"
+#endif
 
 static int
 is_macho( int fd )
@@ -90,6 +93,10 @@ read_thread( int fd )
 	if( read(fd, &th, sizeof(th)) != sizeof(th) )
 		fatal("reading macho thread\n");
 
+#ifdef CONFIG_KVM
+	kvm_regs_kvm2mol();
+#endif
+
 	for( i=0; i<32; i++ )
 		mregs->gpr[i] = th.gprs[i];
 	mregs->nip = th.srr0;
@@ -99,6 +106,10 @@ read_thread( int fd )
 	mregs->ctr = th.ctr;
 	/* mregs->vrsave = th.vrsave; */
 	mregs->msr = 0;
+
+#ifdef CONFIG_KVM
+	kvm_regs_mol2kvm();
+#endif
 }
 
 int
