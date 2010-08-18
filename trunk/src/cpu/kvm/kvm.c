@@ -27,6 +27,7 @@
 #include <linux/kvm.h>
 #include <stdarg.h>
 #include "kvm.h"
+#include <byteswap.h>
 
 static int kvm_fd;
 static int vm_fd;
@@ -141,6 +142,13 @@ int kvm_del_user_memory_region(struct mmu_mapping *m)
     return 0;
 }
 
+int fb_slot = -1;
+unsigned long fb_size = 0;
+static int fb_len;
+static unsigned int *fb_bitmap;
+
+#define TARGET_PAGE_SIZE	4096
+
 int kvm_set_user_memory_region(struct mmu_mapping *m)
 {
     struct kvm_userspace_memory_region mem;
@@ -150,6 +158,15 @@ int kvm_set_user_memory_region(struct mmu_mapping *m)
     mem.memory_size = m->size;
     mem.userspace_addr = (unsigned long)m->lvbase;
     mem.flags = 0;
+
+    if (m->flags & MAPPING_FB) {
+        mem.flags |= KVM_MEM_LOG_DIRTY_PAGES;
+        fb_slot = mem.slot;
+        fb_size = mem.memory_size;
+
+        fb_len = ((fb_size / TARGET_PAGE_SIZE) + 32 - 1) / 32;
+        fb_bitmap = malloc(fb_len);
+    }
 
     printf("KVM mapped %#08lx - %#08lx to %p flags %x\n", m->mbase,
            m->mbase + m->size, m->lvbase, m->flags);
@@ -188,8 +205,55 @@ int kvm_set_fb_size(int bytes_per_row, int height)
 
 int kvm_get_dirty_fb_lines(short *rettable, int table_size_in_bytes)
 {
-    rettable[0] = 0; // y
-    rettable[1] = fb_height - 1; // height
+    struct kvm_dirty_log d;
+    unsigned int i, j;
+    unsigned long page_number, addr, c;
+    int known_start = 0;
+
+    /* no fb mapped */
+    if (fb_slot == -1)
+        return 0;
+
+    rettable[0] = 0; // starting y
+    rettable[1] = fb_height - 1; // ending y
+
+    memset(fb_bitmap, 0, fb_len);
+
+    d.dirty_bitmap = fb_bitmap;
+    d.slot = fb_slot;
+
+    if (kvm_vm_ioctl(KVM_GET_DIRTY_LOG, &d) == -1) {
+        /* failed -> expose all screen as updated */
+        return 1;
+    }
+
+    rettable[1] = 0;
+    for (i = 0; i < fb_len; i++) {
+        if (fb_bitmap[i] != 0) {
+            c = bswap_32(fb_bitmap[i]);
+            do {
+                j = ffsl(c) - 1;
+                c &= ~(1ul << j);
+                page_number = i * 32 + j;
+                addr = page_number * TARGET_PAGE_SIZE;
+
+                if (!known_start) {
+                    rettable[0] = addr / fb_bytes_per_row;
+                    known_start = 1;
+                }
+
+                rettable[1] = ((addr + TARGET_PAGE_SIZE) / fb_bytes_per_row);
+            } while (c != 0);
+        }
+    }
+
+    /* not dirty */
+    if (rettable[0] == rettable[1])
+        return 0;
+
+    /* cap on fb_height */
+    if (rettable[1] > (fb_height - 1))
+        rettable[1] = (fb_height - 1);
 
     return 1;
 }
