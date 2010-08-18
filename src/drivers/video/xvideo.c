@@ -23,6 +23,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XShm.h>
+#include <X11/Xatom.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/mman.h>
@@ -942,6 +943,59 @@ cursor_setter( void )
 }
 #endif
 
+/************************************************************************/
+/*	enter/leave full screen mode					*/
+/************************************************************************/
+
+static void
+netwm_fullscreen(int enable) {
+	XEvent e;
+	Display *display = x11.disp;
+	Window  window = vs.win;
+	int operation = enable ? 1 : 0;
+	Atom atom_fullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN",  False);
+	Atom atom_state      = XInternAtom(display, "_NET_WM_STATE",  False);
+
+	memset(&e,0,sizeof(e));
+	e.xclient.type = ClientMessage;
+	e.xclient.message_type = atom_state;
+	e.xclient.display = display;
+	e.xclient.window = window;
+	e.xclient.format = 32;
+	e.xclient.data.l[0] = operation;
+	e.xclient.data.l[1] = atom_fullscreen;
+
+	XSendEvent(display, DefaultRootWindow(display), False,
+		SubstructureRedirectMask, &e);
+}
+
+
+static int
+toggle_xv_fullscreen_key_action( int key, int num )
+{
+	x11.full_screen = !x11.full_screen;
+
+	printf("XV: Toggling full screen to: %s\n", x11.full_screen ? "on" : "off");
+
+	if (x11.full_screen) {
+		netwm_fullscreen(1);
+		XGrabKeyboard(x11.disp, vs.win, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+	} else {
+		netwm_fullscreen(0);
+		XUngrabKeyboard(x11.disp, CurrentTime);
+	}
+	XSync( x11.disp, false );
+
+	return 1;
+}
+
+
+static key_action_t xv_keys[] = {
+	{ KEY_COMMAND, KEY_CTRL, KEY_ENTER,	toggle_xv_fullscreen_key_action, 1 },
+	{ KEY_COMMAND, KEY_CTRL, KEY_RETURN,	toggle_xv_fullscreen_key_action, 2 },
+	{ KEY_COMMAND, KEY_CTRL, KEY_SPACE,	toggle_xv_fullscreen_key_action, 3 },
+};
+
 
 /************************************************************************/
 /*	init / cleanup							*/
@@ -1045,6 +1099,8 @@ init_window( int width, int height )
 	/* window title */
 	x11_set_win_title( vs.win, "Mac-on-Linux" );
 	XRaiseWindow( x11.disp, vs.win );
+
+	add_key_actions( xv_keys, sizeof(xv_keys) );
 	
 	XSync( x11.disp, false );
 	return true;
