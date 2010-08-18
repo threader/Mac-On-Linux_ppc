@@ -137,9 +137,6 @@ void molcpu_mainloop_prep( void )
         fprintf(stderr, "KVM init failed\n");
         exit(1);
     }
-
-    /* No need for MOL specific accelerations */
-    add_res("no_inst_replacements", "yes");
 }
 
 mol_kmod_info_t *get_mol_kmod_info( void )

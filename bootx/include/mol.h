@@ -14,6 +14,7 @@
 #define _H_MOL
 
 extern void		setup_mol_acceleration( void );
+extern int		setup_kvm_acceleration( void );
 
 
 #endif   /* _H_MOL */
