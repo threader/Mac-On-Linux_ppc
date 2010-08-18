@@ -525,7 +525,8 @@ entry( void )
 	DecodeMachO();
 
 	// MOL acceleration helper (do this before drivers are loaded)
-	setup_mol_acceleration();
+	if (setup_kvm_acceleration())
+		setup_mol_acceleration();
 
 	// Set the 'rootpath' propery used by OS X to determine the root volume
 	SetProp( gChosenPH, "rootpath", gBootFile, strlen(gBootFile) + 1 );
