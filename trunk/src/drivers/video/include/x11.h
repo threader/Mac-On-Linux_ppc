@@ -39,6 +39,8 @@ typedef struct {
 	XColor		white;
 	ulong		black_pixel;
 	ulong		white_pixel;
+
+	int		full_screen;
 } x11_info_t;
 
 extern x11_info_t	x11;
