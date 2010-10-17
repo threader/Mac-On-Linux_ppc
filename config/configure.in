@@ -14,7 +14,7 @@ AC_CONFIG_HEADER(config.h:config.h.in)
 ######################################################################
 # Die if we're trying to build on x86
 ######################################################################
-test "$ARCH" != ppc && "$ARCH" != ppc64 && test "$ARCH" != osx && {
+test "$ARCH" != ppc && test "$ARCH" != ppc64 && test "$ARCH" != osx && {
    	AC_MSG_ERROR([Sorry, MOL only supports PowerPC processors]) 
 	exit 1;
 }
