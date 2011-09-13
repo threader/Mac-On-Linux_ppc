@@ -58,6 +58,7 @@ int kvm_init(void)
         return -1;
     }
 
+    memset(cap, 0, sizeof(cap));
     cap.cap = KVM_CAP_PPC_OSI;
     r = kvm_vcpu_ioctl(KVM_ENABLE_CAP, &cap);
     if (r < 0) {
